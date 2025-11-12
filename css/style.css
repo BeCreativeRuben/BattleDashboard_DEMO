@@ -587,3 +587,327 @@ header h1 {
     }
 }
 
+/* ============================================ */
+/* EASTER EGG: FAKE ERROR MESSAGES - DEBUG MODE */
+/* Verwijder deze sectie om te deactiveren      */
+/* ============================================ */
+
+.debug-error-button {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 9999;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.7;
+}
+
+.debug-error-button:hover {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+    animation: pulse 1s infinite;
+}
+
+.debug-error-button:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.debug-error-button:disabled {
+    opacity: 1;
+    animation: chaos-pulse 0.5s infinite;
+    background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+}
+
+.debug-error-active {
+    animation: chaos-pulse 0.5s infinite, rotate 2s linear infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    }
+    50% {
+        box-shadow: 0 6px 25px rgba(255, 107, 107, 0.8);
+    }
+}
+
+@keyframes chaos-pulse {
+    0%, 100% {
+        transform: translateY(-50%) scale(1);
+        box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+    }
+    50% {
+        transform: translateY(-50%) scale(1.2);
+        box-shadow: 0 0 40px rgba(255, 0, 0, 1);
+    }
+}
+
+@keyframes rotate {
+    from {
+        transform: translateY(-50%) rotate(0deg);
+    }
+    to {
+        transform: translateY(-50%) rotate(360deg);
+    }
+}
+
+/* Fake Error Pop-ups */
+.fake-error-popup {
+    position: fixed;
+    width: 380px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    animation: pop-in 0.3s ease-out;
+    border-left: 5px solid;
+    overflow: hidden;
+}
+
+.fake-error-critical {
+    border-left-color: #ff0000;
+    background: linear-gradient(to right, #fff5f5 0%, white 5%);
+}
+
+.fake-error-warning {
+    border-left-color: #ffa500;
+    background: linear-gradient(to right, #fff8f0 0%, white 5%);
+}
+
+.fake-error-fatal {
+    border-left-color: #8b0000;
+    background: linear-gradient(to right, #2d1b1b 0%, white 5%);
+    color: #fff;
+}
+
+.fake-error-alert {
+    border-left-color: #ff1493;
+    background: linear-gradient(to right, #fff0f5 0%, white 5%);
+}
+
+.fake-error-header {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    background: rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.fake-error-icon {
+    font-size: 1.5rem;
+    margin-right: 10px;
+    animation: bounce 1s infinite;
+}
+
+.fake-error-title {
+    flex: 1;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.fake-error-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    transition: all 0.2s;
+    line-height: 1;
+}
+
+.fake-error-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+
+.fake-error-body {
+    padding: 20px;
+}
+
+.fake-error-body p {
+    margin: 0 0 12px 0;
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+.fake-error-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.fake-error-details small {
+    color: #666;
+    font-size: 0.8rem;
+}
+
+.fake-error-footer {
+    display: flex;
+    gap: 10px;
+    padding: 16px 20px;
+    background: rgba(0, 0, 0, 0.02);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.fake-error-btn {
+    flex: 1;
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: white;
+    color: #333;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.fake-error-btn:hover {
+    background: #f5f5f5;
+    border-color: #999;
+}
+
+.fake-error-btn-primary {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.fake-error-btn-primary:hover {
+    background: #5568d3;
+}
+
+/* Animations */
+@keyframes pop-in {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes slide-in-left {
+    from {
+        opacity: 0;
+        transform: translateX(-100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slide-in-right {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slide-in-top {
+    from {
+        opacity: 0;
+        transform: translateY(-100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slide-in-bottom {
+    from {
+        opacity: 0;
+        transform: translateY(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes zoom-in {
+    from {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes rotate-in {
+    from {
+        opacity: 0;
+        transform: rotate(-180deg) scale(0.5);
+    }
+    to {
+        opacity: 1;
+        transform: rotate(0deg) scale(1);
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.shake {
+    animation: shake 0.5s;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+.fade-out {
+    animation: fade-out 0.5s ease-out forwards;
+}
+
+@keyframes fade-out {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+}
+
+/* ============================================ */
+/* EINDE EASTER EGG SECTIE                      */
+/* ============================================ */
+

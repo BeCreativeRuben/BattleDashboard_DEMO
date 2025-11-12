@@ -19,19 +19,88 @@ const KUISMACHINE_LOGS_SHEET_NAME = 'Kuismachine Logs'; // Naam van het tabblad 
  */
 function doGet(e) {
     try {
+        // Valideer SHEET_ID
+        if (!SHEET_ID || SHEET_ID === 'YOUR_SHEET_ID_HERE') {
+            const errorResponse = createErrorResponse('SHEET_ID is niet geconfigureerd. Controleer Code.gs');
+            const output = errorResponse.getContent();
+            return ContentService
+                .createTextOutput(output)
+                .setMimeType(ContentService.MimeType.JSON)
+                .setHeaders({
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type'
+                });
+        }
+        
         // Open de spreadsheet
-        const spreadsheet = SpreadsheetApp.openById(SHEET_ID);
+        let spreadsheet;
+        try {
+            // Probeer eerst te controleren of de spreadsheet bestaat
+            spreadsheet = SpreadsheetApp.openById(SHEET_ID);
+            // Test of we toegang hebben door de naam op te halen
+            const spreadsheetName = spreadsheet.getName();
+            Logger.log('Spreadsheet geopend: ' + spreadsheetName);
+        } catch (openError) {
+            Logger.log('Error opening spreadsheet. SHEET_ID: ' + SHEET_ID);
+            Logger.log('Error details: ' + openError.toString());
+            Logger.log('Error stack: ' + (openError.stack || 'No stack trace'));
+            
+            let errorMessage = 'Kan spreadsheet niet openen. ';
+            if (openError.toString().includes('Unexpected error')) {
+                errorMessage += 'Mogelijke oorzaken:\n';
+                errorMessage += '1. De spreadsheet bestaat niet of de SHEET_ID is verkeerd\n';
+                errorMessage += '2. De Google Apps Script heeft geen toegang tot de spreadsheet\n';
+                errorMessage += '3. De spreadsheet is niet gedeeld met het account dat de script uitvoert\n';
+                errorMessage += '\nControleer:\n';
+                errorMessage += '- Of de spreadsheet ID correct is: ' + SHEET_ID + '\n';
+                errorMessage += '- Of je de spreadsheet hebt gedeeld met je Google account\n';
+                errorMessage += '- Of je de permissies hebt verleend aan de Google Apps Script';
+            } else {
+                errorMessage += 'Fout: ' + openError.toString();
+            }
+            
+            const errorResponse = createErrorResponse(errorMessage);
+            const output = errorResponse.getContent();
+            return ContentService
+                .createTextOutput(output)
+                .setMimeType(ContentService.MimeType.JSON)
+                .setHeaders({
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type'
+                });
+        }
+        
         const sheet = spreadsheet.getSheetByName(SHEET_NAME);
         
         if (!sheet) {
-            return createErrorResponse('Sheet niet gevonden: ' + SHEET_NAME);
+            const errorResponse = createErrorResponse('Sheet niet gevonden: ' + SHEET_NAME);
+            const output = errorResponse.getContent();
+            return ContentService
+                .createTextOutput(output)
+                .setMimeType(ContentService.MimeType.JSON)
+                .setHeaders({
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type'
+                });
         }
         
         // Haal alle data op (behalve header row)
         const data = sheet.getDataRange().getValues();
         
         if (data.length <= 1) {
-            return createSuccessResponse([]);
+            const successResponse = createSuccessResponse([]);
+            const output = successResponse.getContent();
+            return ContentService
+                .createTextOutput(output)
+                .setMimeType(ContentService.MimeType.JSON)
+                .setHeaders({
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type'
+                });
         }
         
         // Skip header row (eerste rij)
@@ -54,12 +123,44 @@ function doGet(e) {
             };
         }).filter(tool => tool.id && tool.title); // Filter lege rijen
         
-        return createSuccessResponse(tools);
+        const successResponse = createSuccessResponse(tools);
+        const output = successResponse.getContent();
+        return ContentService
+            .createTextOutput(output)
+            .setMimeType(ContentService.MimeType.JSON)
+            .setHeaders({
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
+            });
         
     } catch (error) {
         Logger.log('Error in doGet: ' + error.toString());
-        return createErrorResponse('Fout bij het ophalen van data: ' + error.toString());
+        const errorResponse = createErrorResponse('Fout bij het ophalen van data: ' + error.toString());
+        const output = errorResponse.getContent();
+        return ContentService
+            .createTextOutput(output)
+            .setMimeType(ContentService.MimeType.JSON)
+            .setHeaders({
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
+            });
     }
+}
+
+/**
+ * Handle OPTIONS request voor CORS preflight
+ */
+function doOptions() {
+    return ContentService
+        .createTextOutput('')
+        .setMimeType(ContentService.MimeType.JSON)
+        .setHeaders({
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type'
+        });
 }
 
 /**
@@ -70,6 +171,8 @@ function doPost(e) {
         const postData = JSON.parse(e.postData.contents);
         const action = postData.action;
         
+        let result;
+        
         if (action === 'update') {
             // Update laatste invuldatum voor een tool
             const toolId = postData.toolId;
@@ -77,18 +180,36 @@ function doPost(e) {
             const time = postData.time;
             const user = postData.user;
             
-            return updateToolLastUpdate(toolId, date, time, user);
+            result = updateToolLastUpdate(toolId, date, time, user);
+        } else if (action === 'saveKuismachineLog') {
+            result = saveKuismachineLog(postData);
+        } else {
+            result = createErrorResponse('Onbekende actie: ' + action);
         }
         
-        if (action === 'saveKuismachineLog') {
-            return saveKuismachineLog(postData);
-        }
-        
-        return createErrorResponse('Onbekende actie: ' + action);
+        // Voeg CORS headers toe
+        const output = result.getContent();
+        return ContentService
+            .createTextOutput(output)
+            .setMimeType(ContentService.MimeType.JSON)
+            .setHeaders({
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
+            });
         
     } catch (error) {
         Logger.log('Error in doPost: ' + error.toString());
-        return createErrorResponse('Fout bij verwerken van request: ' + error.toString());
+        const errorResponse = createErrorResponse('Fout bij verwerken van request: ' + error.toString());
+        const output = errorResponse.getContent();
+        return ContentService
+            .createTextOutput(output)
+            .setMimeType(ContentService.MimeType.JSON)
+            .setHeaders({
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
+            });
     }
 }
 
@@ -200,11 +321,60 @@ function createErrorResponse(message) {
 }
 
 /**
+ * Test functie om spreadsheet toegang te testen
+ * Voer deze functie handmatig uit vanuit de Apps Script editor om te testen
+ */
+function testSpreadsheetAccess() {
+    try {
+        Logger.log('Testing spreadsheet access...');
+        Logger.log('SHEET_ID: ' + SHEET_ID);
+        
+        const spreadsheet = SpreadsheetApp.openById(SHEET_ID);
+        const spreadsheetName = spreadsheet.getName();
+        Logger.log('SUCCESS: Spreadsheet geopend: ' + spreadsheetName);
+        
+        const sheets = spreadsheet.getSheets();
+        Logger.log('Aantal tabbladen: ' + sheets.length);
+        sheets.forEach(function(sheet) {
+            Logger.log('- Tabblad: ' + sheet.getName());
+        });
+        
+        return 'SUCCESS: Spreadsheet toegang werkt!';
+    } catch (error) {
+        Logger.log('ERROR: ' + error.toString());
+        Logger.log('Stack: ' + (error.stack || 'No stack trace'));
+        return 'ERROR: ' + error.toString();
+    }
+}
+
+/**
  * Sla kuismachine log op in spreadsheet
  */
 function saveKuismachineLog(postData) {
     try {
-        const spreadsheet = SpreadsheetApp.openById(SHEET_ID);
+        // Valideer SHEET_ID
+        if (!SHEET_ID || SHEET_ID === 'YOUR_SHEET_ID_HERE') {
+            return createErrorResponse('SHEET_ID is niet geconfigureerd. Controleer Code.gs');
+        }
+        
+        let spreadsheet;
+        try {
+            spreadsheet = SpreadsheetApp.openById(SHEET_ID);
+            const spreadsheetName = spreadsheet.getName();
+            Logger.log('Spreadsheet geopend voor save: ' + spreadsheetName);
+        } catch (openError) {
+            Logger.log('Error opening spreadsheet voor save. SHEET_ID: ' + SHEET_ID);
+            Logger.log('Error details: ' + openError.toString());
+            
+            let errorMessage = 'Kan spreadsheet niet openen. ';
+            if (openError.toString().includes('Unexpected error')) {
+                errorMessage += 'Controleer of de spreadsheet bestaat en gedeeld is met je Google account.';
+            } else {
+                errorMessage += 'Fout: ' + openError.toString();
+            }
+            
+            return createErrorResponse(errorMessage);
+        }
         
         // Zorg dat het tabblad bestaat
         let sheet = spreadsheet.getSheetByName(KUISMACHINE_LOGS_SHEET_NAME);

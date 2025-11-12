@@ -1,5 +1,5 @@
 // Google Apps Script Web App URL - Deze moet worden aangepast na deployment
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvuoqYDXuqLm6QtrYJzhlJ-IaddPzO1x9bHVJhEznY3U4DpGY9QFYdgUSpW7SN58Rz/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyIVQeJVMrlLOYQV2-JL3bLwScmG7PUlZfN6qOjuBhc8YZ9WQrF75FmlO5-_zWW43Oh/exec';
 
 // Laad dashboard bij pagina load
 document.addEventListener('DOMContentLoaded', () => {
