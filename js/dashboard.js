@@ -1,5 +1,5 @@
 // Google Apps Script Web App URL - Deze moet worden aangepast na deployment
-const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvuoqYDXuqLm6QtrYJzhlJ-IaddPzO1x9bHVJhEznY3U4DpGY9QFYdgUSpW7SN58Rz/exec';
 
 // Laad dashboard bij pagina load
 document.addEventListener('DOMContentLoaded', () => {
@@ -13,7 +13,7 @@ async function loadDashboard() {
     const loadingEl = document.getElementById('loading');
     const errorEl = document.getElementById('error');
     const dashboardEl = document.getElementById('dashboard');
-
+    
     // Toon loading state
     loadingEl.style.display = 'block';
     errorEl.style.display = 'none';
@@ -186,6 +186,14 @@ function createToolCard(tool) {
             </div>
         </div>
         <div class="tool-actions">
+            ${tool.id === 'kuismachine-logs' ? `
+            <button class="check-button ${needsAction ? 'check-button-pending' : 'check-button-completed'}" onclick="window.open('https://docs.google.com/spreadsheets/d/1IcufTmf0ZaYLLBBzuPYr91F371lThHGrVqR4OydxGxQ/edit#gid=0', '_blank')">
+                ${needsAction ? '✓ Check nu' : '✓ Opnieuw checken'}
+            </button>
+            <button class="check-button check-button-primary" onclick="openKuismachineLogsOverlay()">
+                📝 Invoeren
+            </button>
+            ` : `
             <button class="check-button ${needsAction ? 'check-button-pending' : 'check-button-completed'}" onclick="handleCheck('${tool.id}')">
                 ${needsAction ? '✓ Check nu' : '✓ Opnieuw checken'}
             </button>
@@ -193,6 +201,7 @@ function createToolCard(tool) {
             <a href="${escapeHtml(tool.link)}" class="tool-link-button">→ Ga naar tool</a>
             ` : `
             <span class="tool-link-button disabled">Binnenkort beschikbaar</span>
+            `}
             `}
         </div>
     `;
@@ -209,6 +218,243 @@ function handleCheck(toolId) {
     alert(`Tool "${toolId}" wordt nu gecheckt. In productie zou dit de status updaten.`);
     // Optioneel: reload dashboard om status te updaten
     // loadDashboard();
+}
+
+/**
+ * Open kuismachine logs overlay
+ */
+function openKuismachineLogsOverlay() {
+    const overlay = document.getElementById('kuismachine-logs-overlay');
+    const form = document.getElementById('kuismachine-logs-form');
+    const errorDiv = document.getElementById('form-error');
+    
+    // Reset formulier
+    form.reset();
+    errorDiv.style.display = 'none';
+    errorDiv.textContent = '';
+    
+    // Verberg machine velden
+    document.getElementById('kuismachine-fields').style.display = 'none';
+    document.getElementById('stofzuiger-fields').style.display = 'none';
+    
+    // Vul automatisch datum en tijd
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('nl-NL', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    const timeStr = now.toLocaleTimeString('nl-NL', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    document.getElementById('datum').value = dateStr;
+    document.getElementById('tijd').value = timeStr;
+    
+    // Toon overlay
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Sluit kuismachine logs overlay
+ */
+function closeKuismachineLogsOverlay() {
+    const overlay = document.getElementById('kuismachine-logs-overlay');
+    overlay.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+/**
+ * Toggle machine fields op basis van checkbox
+ */
+function toggleMachineFields(machineType) {
+    const checkbox = document.getElementById(`${machineType}-gebruikt`);
+    const fields = document.getElementById(`${machineType}-fields`);
+    
+    if (checkbox.checked) {
+        fields.style.display = 'block';
+    } else {
+        fields.style.display = 'none';
+        // Reset velden
+        document.getElementById(`${machineType}-uitgekuist`).checked = false;
+        document.getElementById(`${machineType}-starttijd`).value = '';
+        document.getElementById(`${machineType}-eindtijd`).value = '';
+    }
+}
+
+/**
+ * Valideer tijd formaat (HH:MM)
+ */
+function validateTimeFormat(time) {
+    const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
+    return timeRegex.test(time);
+}
+
+/**
+ * Converteer tijd string naar minuten sinds middernacht voor vergelijking
+ */
+function timeToMinutes(timeStr) {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 60 + minutes;
+}
+
+/**
+ * Valideer formulier data
+ */
+function validateKuismachineLogsForm(formData) {
+    const errors = [];
+    
+    // Naam is verplicht
+    if (!formData.naam || formData.naam.trim() === '') {
+        errors.push('Naam is verplicht');
+    }
+    
+    // Minimaal één machine moet gebruikt zijn
+    if (!formData.kuismachineGebruikt && !formData.stofzuigerGebruikt) {
+        errors.push('Selecteer minimaal één machine (kuismachine of stofzuiger)');
+    }
+    
+    // Valideer kuismachine velden als gebruikt
+    if (formData.kuismachineGebruikt) {
+        if (!formData.kuismachineStarttijd || formData.kuismachineStarttijd.trim() === '') {
+            errors.push('Kuismachine starttijd is verplicht');
+        } else if (!validateTimeFormat(formData.kuismachineStarttijd)) {
+            errors.push('Kuismachine starttijd moet in formaat HH:MM zijn (bijv. 14:30)');
+        }
+        
+        if (!formData.kuismachineEindtijd || formData.kuismachineEindtijd.trim() === '') {
+            errors.push('Kuismachine eindtijd is verplicht');
+        } else if (!validateTimeFormat(formData.kuismachineEindtijd)) {
+            errors.push('Kuismachine eindtijd moet in formaat HH:MM zijn (bijv. 15:45)');
+        }
+        
+        // Eindtijd moet na starttijd zijn
+        if (formData.kuismachineStarttijd && formData.kuismachineEindtijd) {
+            if (validateTimeFormat(formData.kuismachineStarttijd) && validateTimeFormat(formData.kuismachineEindtijd)) {
+                if (timeToMinutes(formData.kuismachineEindtijd) <= timeToMinutes(formData.kuismachineStarttijd)) {
+                    errors.push('Kuismachine eindtijd moet na starttijd zijn');
+                }
+            }
+        }
+    }
+    
+    // Valideer stofzuiger velden als gebruikt
+    if (formData.stofzuigerGebruikt) {
+        if (!formData.stofzuigerStarttijd || formData.stofzuigerStarttijd.trim() === '') {
+            errors.push('Stofzuiger starttijd is verplicht');
+        } else if (!validateTimeFormat(formData.stofzuigerStarttijd)) {
+            errors.push('Stofzuiger starttijd moet in formaat HH:MM zijn (bijv. 14:30)');
+        }
+        
+        if (!formData.stofzuigerEindtijd || formData.stofzuigerEindtijd.trim() === '') {
+            errors.push('Stofzuiger eindtijd is verplicht');
+        } else if (!validateTimeFormat(formData.stofzuigerEindtijd)) {
+            errors.push('Stofzuiger eindtijd moet in formaat HH:MM zijn (bijv. 15:45)');
+        }
+        
+        // Eindtijd moet na starttijd zijn
+        if (formData.stofzuigerStarttijd && formData.stofzuigerEindtijd) {
+            if (validateTimeFormat(formData.stofzuigerStarttijd) && validateTimeFormat(formData.stofzuigerEindtijd)) {
+                if (timeToMinutes(formData.stofzuigerEindtijd) <= timeToMinutes(formData.stofzuigerStarttijd)) {
+                    errors.push('Stofzuiger eindtijd moet na starttijd zijn');
+                }
+            }
+        }
+    }
+    
+    return errors;
+}
+
+/**
+ * Handle kuismachine logs formulier submit
+ */
+async function handleKuismachineLogsSubmit(event) {
+    event.preventDefault();
+    
+    const errorDiv = document.getElementById('form-error');
+    errorDiv.style.display = 'none';
+    errorDiv.textContent = '';
+    
+    // Verzamel formulier data
+    const formData = {
+        naam: document.getElementById('naam').value.trim(),
+        kuismachineGebruikt: document.getElementById('kuismachine-gebruikt').checked,
+        kuismachineUitgekuist: document.getElementById('kuismachine-uitgekuist').checked,
+        kuismachineStarttijd: document.getElementById('kuismachine-starttijd').value.trim(),
+        kuismachineEindtijd: document.getElementById('kuismachine-eindtijd').value.trim(),
+        stofzuigerGebruikt: document.getElementById('stofzuiger-gebruikt').checked,
+        stofzuigerUitgekuist: document.getElementById('stofzuiger-uitgekuist').checked,
+        stofzuigerStarttijd: document.getElementById('stofzuiger-starttijd').value.trim(),
+        stofzuigerEindtijd: document.getElementById('stofzuiger-eindtijd').value.trim()
+    };
+    
+    // Valideer
+    const errors = validateKuismachineLogsForm(formData);
+    if (errors.length > 0) {
+        errorDiv.textContent = errors.join('. ');
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    // Voeg datum en tijd toe
+    const now = new Date();
+    formData.datum = now.toISOString().split('T')[0];
+    formData.tijd = now.toLocaleTimeString('nl-NL', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    // Disable submit button
+    const submitButton = event.target.querySelector('button[type="submit"]');
+    const originalText = submitButton.textContent;
+    submitButton.disabled = true;
+    submitButton.textContent = 'Opslaan...';
+    
+    try {
+        // Stuur data naar Google Apps Script
+        if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE') {
+            const response = await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'saveKuismachineLog',
+                    ...formData
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Success - sluit overlay en toon melding
+                alert('Kuismachine log succesvol opgeslagen!');
+                closeKuismachineLogsOverlay();
+                // Optioneel: reload dashboard
+                // loadDashboard();
+            } else {
+                throw new Error(result.error || 'Onbekende fout bij opslaan');
+            }
+        } else {
+            // Demo mode - toon melding
+            console.log('Demo mode - formulier data:', formData);
+            alert('Demo mode: Formulier data zou worden opgeslagen:\n' + JSON.stringify(formData, null, 2));
+            closeKuismachineLogsOverlay();
+        }
+    } catch (error) {
+        console.error('Error saving kuismachine log:', error);
+        errorDiv.textContent = 'Fout bij opslaan: ' + error.message;
+        errorDiv.style.display = 'block';
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = originalText;
+    }
 }
 
 /**

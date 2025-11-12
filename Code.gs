@@ -8,8 +8,11 @@
 // Vervang dit met de ID van je Google Sheet
 // Je vindt de ID in de URL van je Google Sheet:
 // https://docs.google.com/spreadsheets/d/SHEET_ID_HERE/edit
-const SHEET_ID = 'YOUR_SHEET_ID_HERE';
+// Voorbeeld: https://docs.google.com/spreadsheets/d/1IcufTmf0ZaYLLBBzuPYr91F371lThHGrVqR4OydxGxQ/edit
+// De ID is: 1IcufTmf0ZaYLLBBzuPYr91F371lThHGrVqR4OydxGxQ
+const SHEET_ID = '1IcufTmf0ZaYLLBBzuPYr91F371lThHGrVqR4OydxGxQ'; // Vervang met je spreadsheet ID
 const SHEET_NAME = 'Dashboard'; // Naam van het tabblad in de sheet
+const KUISMACHINE_LOGS_SHEET_NAME = 'Kuismachine Logs'; // Naam van het tabblad voor kuismachine logs (wordt automatisch aangemaakt)
 
 /**
  * HTTP GET handler - Retourneert dashboard data als JSON
@@ -75,6 +78,10 @@ function doPost(e) {
             const user = postData.user;
             
             return updateToolLastUpdate(toolId, date, time, user);
+        }
+        
+        if (action === 'saveKuismachineLog') {
+            return saveKuismachineLog(postData);
         }
         
         return createErrorResponse('Onbekende actie: ' + action);
@@ -163,11 +170,20 @@ function getValue(row, columnMap, columnName) {
  * Maak een succesvolle JSON response
  */
 function createSuccessResponse(data) {
+    const response = {
+        success: true
+    };
+    
+    // Als data een object is met specifieke properties, voeg die toe
+    // Anders behandel het als tools array (voor backwards compatibility)
+    if (Array.isArray(data)) {
+        response.tools = data;
+    } else {
+        Object.assign(response, data);
+    }
+    
     return ContentService
-        .createTextOutput(JSON.stringify({
-            success: true,
-            tools: data
-        }))
+        .createTextOutput(JSON.stringify(response))
         .setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -181,5 +197,90 @@ function createErrorResponse(message) {
             error: message
         }))
         .setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * Sla kuismachine log op in spreadsheet
+ */
+function saveKuismachineLog(postData) {
+    try {
+        const spreadsheet = SpreadsheetApp.openById(SHEET_ID);
+        
+        // Zorg dat het tabblad bestaat
+        let sheet = spreadsheet.getSheetByName(KUISMACHINE_LOGS_SHEET_NAME);
+        if (!sheet) {
+            sheet = spreadsheet.insertSheet(KUISMACHINE_LOGS_SHEET_NAME);
+            // Voeg headers toe
+            const headers = [
+                'Datum',
+                'Tijd',
+                'Naam',
+                'Kuismachine Gebruikt',
+                'Kuismachine Uitgekuist',
+                'Kuismachine Starttijd',
+                'Kuismachine Eindtijd',
+                'Stofzuiger Gebruikt',
+                'Stofzuiger Uitgekuist',
+                'Stofzuiger Starttijd',
+                'Stofzuiger Eindtijd'
+            ];
+            sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+            // Format header row
+            const headerRange = sheet.getRange(1, 1, 1, headers.length);
+            headerRange.setFontWeight('bold');
+            headerRange.setBackground('#667eea');
+            headerRange.setFontColor('#ffffff');
+        }
+        
+        // Controleer of headers bestaan, zo niet voeg ze toe
+        const existingHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+        if (existingHeaders.length === 0 || existingHeaders[0] === '') {
+            const headers = [
+                'Datum',
+                'Tijd',
+                'Naam',
+                'Kuismachine Gebruikt',
+                'Kuismachine Uitgekuist',
+                'Kuismachine Starttijd',
+                'Kuismachine Eindtijd',
+                'Stofzuiger Gebruikt',
+                'Stofzuiger Uitgekuist',
+                'Stofzuiger Starttijd',
+                'Stofzuiger Eindtijd'
+            ];
+            sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+            const headerRange = sheet.getRange(1, 1, 1, headers.length);
+            headerRange.setFontWeight('bold');
+            headerRange.setBackground('#667eea');
+            headerRange.setFontColor('#ffffff');
+        }
+        
+        // Voeg nieuwe rij toe
+        const newRow = [
+            postData.datum || '',
+            postData.tijd || '',
+            postData.naam || '',
+            postData.kuismachineGebruikt ? 'Ja' : 'Nee',
+            postData.kuismachineUitgekuist ? 'Ja' : 'Nee',
+            postData.kuismachineStarttijd || '',
+            postData.kuismachineEindtijd || '',
+            postData.stofzuigerGebruikt ? 'Ja' : 'Nee',
+            postData.stofzuigerUitgekuist ? 'Ja' : 'Nee',
+            postData.stofzuigerStarttijd || '',
+            postData.stofzuigerEindtijd || ''
+        ];
+        
+        const nextRow = sheet.getLastRow() + 1;
+        sheet.getRange(nextRow, 1, 1, newRow.length).setValues([newRow]);
+        
+        return createSuccessResponse({ 
+            message: 'Kuismachine log succesvol opgeslagen',
+            row: nextRow
+        });
+        
+    } catch (error) {
+        Logger.log('Error saving kuismachine log: ' + error.toString());
+        return createErrorResponse('Fout bij opslaan van kuismachine log: ' + error.toString());
+    }
 }
 
