@@ -1,57 +1,59 @@
 // Link data met alle tools en links
 const tools = [
-    {
-        id: 'overview',
-        title: 'Overview',
-        url: 'https://becreativeruben.github.io/BK_Overview_Demo/'
-    },
+    // Dagelijkse taken
     {
         id: 'cash-payments',
         title: 'Cash & Payments Employees',
-        url: 'https://docs.google.com/spreadsheets/d/1NRhb54013pCnwgjNvl6OgvL7UAzP_xarv601Va_DFNY/edit?gid=263458102#gid=263458102'
+        url: 'https://docs.google.com/spreadsheets/d/1NRhb54013pCnwgjNvl6OgvL7UAzP_xarv601Va_DFNY/edit?gid=263458102#gid=263458102',
+        frequency: 'daily'
     },
     {
         id: 'kart-daily-logboek',
         title: 'Kart Daily logboek',
         url: 'Kart Logboek v.xlsx',
-        isFile: true
+        isFile: true,
+        frequency: 'daily'
     },
     {
         id: 'daily-report',
         title: 'Daily Report',
         url: 'Dagreport.docx',
-        isFile: true
+        isFile: true,
+        frequency: 'daily'
     },
     {
         id: 'bk-panel',
         title: 'BK panel',
-        url: 'https://oauth.battlekart.com/authorize?client_id=d66a502f0a4b7690ed5808e0b559010b&redirect_uri=https%3A%2F%2Fpanel.battlekart.com%2F&response_type=id_token&scope=openid+profile+email&state=33be5a04e47045b69f25360d57512097&brand_id=2&flow='
+        url: 'https://oauth.battlekart.com/authorize?client_id=d66a502f0a4b7690ed5808e0b559010b&redirect_uri=https%3A%2F%2Fpanel.battlekart.com%2F&response_type=id_token&scope=openid+profile+email&state=33be5a04e47045b69f25360d57512097&brand_id=2&flow=',
+        frequency: 'daily'
     },
     {
         id: 'kuismachine-website',
         title: 'Kuismachine website',
-        url: 'https://becreativeruben.github.io/BK_Overview_Demo/'
+        url: 'https://becreativeruben.github.io/BK_Overview_Demo/',
+        frequency: 'daily'
     },
     {
         id: 'kuismachine-logs',
         title: 'Kuismachine logs',
         url: '#',
-        isFile: true
+        isFile: true,
+        frequency: 'daily'
     },
+    // Wekelijkse taken
     {
         id: 'stockcheck-bk',
         title: 'StockcheckBK',
-        url: 'https://becreativeruben.github.io/StockCheckBK_V2/'
+        url: 'https://becreativeruben.github.io/StockCheckBK_V2/',
+        frequency: 'weekly'
     },
     {
-        id: 'kart-weekly-site',
-        title: 'Kart Weekly site',
-        url: 'https://becreativeruben.github.io/WeeklyKartCheck/'
-    },
-    {
-        id: 'kart-weekly-logboek',
-        title: 'Kart Weekly logboek',
-        url: 'https://docs.google.com/spreadsheets/d/1sCTKJzF1b7pZ5bB1AFD8Y-Hzx2HXI4x5AhVMNVi6gM8/edit'
+        id: 'kart-weekly',
+        title: 'Kart Weekly',
+        url: 'https://becreativeruben.github.io/WeeklyKartCheck/',
+        logboekUrl: 'https://docs.google.com/spreadsheets/d/1sCTKJzF1b7pZ5bB1AFD8Y-Hzx2HXI4x5AhVMNVi6gM8/edit',
+        frequency: 'weekly',
+        hasMultipleLinks: true
     }
 ];
 
@@ -67,7 +69,26 @@ function loadDashboard() {
     const container = document.getElementById('tools-container');
     container.innerHTML = '';
 
-    tools.forEach(tool => {
+    // Sorteer tools: eerst dagelijks, dan wekelijks
+    const dailyTools = tools.filter(tool => tool.frequency === 'daily');
+    const weeklyTools = tools.filter(tool => tool.frequency === 'weekly');
+
+    // Toon dagelijkse taken
+    dailyTools.forEach(tool => {
+        const toolCard = createToolCard(tool);
+        container.appendChild(toolCard);
+    });
+
+    // Voeg scheidingslijn toe tussen dagelijkse en wekelijkse taken
+    if (dailyTools.length > 0 && weeklyTools.length > 0) {
+        const divider = document.createElement('div');
+        divider.className = 'frequency-divider';
+        divider.innerHTML = '<div class="divider-line"></div><div class="divider-text">Wekelijkse taken</div><div class="divider-line"></div>';
+        container.appendChild(divider);
+    }
+
+    // Toon wekelijkse taken
+    weeklyTools.forEach(tool => {
         const toolCard = createToolCard(tool);
         container.appendChild(toolCard);
     });
@@ -86,11 +107,51 @@ function createToolCard(tool) {
     const lastClickText = lastClick 
         ? formatDateTime(lastClick) 
         : 'Nog niet geklikt';
+    
+    // Bereken "X geleden" tag
+    const timeAgoText = lastClick ? getTimeAgo(lastClick) : null;
+    
+    // Frequency badge
+    const frequencyBadge = tool.frequency === 'daily' 
+        ? '<span class="frequency-badge frequency-daily">Dagelijks</span>'
+        : '<span class="frequency-badge frequency-weekly">Wekelijks</span>';
+
+    // Voor Kart Weekly: twee knoppen
+    let actionsHTML = '';
+    if (tool.hasMultipleLinks && tool.logboekUrl) {
+        actionsHTML = `
+            <a href="${escapeHtml(tool.url)}" 
+               class="tool-link-button" 
+               target="_blank"
+               onclick="handleLinkClick('${tool.id}', event)">
+                → Ga naar tool
+            </a>
+            <a href="${escapeHtml(tool.logboekUrl)}" 
+               class="tool-link-button tool-link-button-secondary" 
+               target="_blank"
+               onclick="handleLinkClick('${tool.id}-logboek', event)">
+                → Ga naar logboek
+            </a>
+        `;
+    } else if (tool.url && tool.url !== '#') {
+        actionsHTML = `
+            <a href="${escapeHtml(tool.url)}" 
+               class="tool-link-button" 
+               target="_blank"
+               onclick="handleLinkClick('${tool.id}', event)">
+                → Ga naar tool
+            </a>
+        `;
+    } else {
+        actionsHTML = '<span class="tool-link-button disabled">Binnenkort beschikbaar</span>';
+    }
 
     card.innerHTML = `
         <div class="tool-header">
             <div class="tool-title">${escapeHtml(tool.title)}</div>
+            ${frequencyBadge}
         </div>
+        ${timeAgoText ? `<div class="time-ago-tag">${escapeHtml(timeAgoText)}</div>` : ''}
         <div class="tool-info">
             <div class="info-item">
                 <span class="info-label">Laatst geklikt:</span>
@@ -98,16 +159,7 @@ function createToolCard(tool) {
             </div>
         </div>
         <div class="tool-actions">
-            ${tool.url && tool.url !== '#' ? `
-            <a href="${escapeHtml(tool.url)}" 
-               class="tool-link-button" 
-               target="_blank"
-               onclick="handleLinkClick('${tool.id}', event)">
-                → Ga naar tool
-            </a>
-            ` : `
-            <span class="tool-link-button disabled">Binnenkort beschikbaar</span>
-            `}
+            ${actionsHTML}
         </div>
     `;
 
@@ -120,10 +172,13 @@ function createToolCard(tool) {
 function handleLinkClick(toolId, event) {
     // Log de klik tijd
     const now = new Date();
-    saveLastClick(toolId, now);
+    
+    // Voor logboek clicks, sla op onder de basis toolId
+    const baseToolId = toolId.replace('-logboek', '');
+    saveLastClick(baseToolId, now);
     
     // Update de weergave
-    updateLastClickDisplay(toolId, now);
+    updateLastClickDisplay(baseToolId, now);
 }
 
 /**
@@ -161,12 +216,29 @@ function getLastClick(toolId) {
  * Update de weergave van laatste klik tijd
  */
 function updateLastClickDisplay(toolId, dateTime) {
-    const card = document.querySelector(`.tool-card[data-tool-id="${toolId}"]`);
+    // Voor logboek clicks, gebruik de basis toolId
+    const baseToolId = toolId.replace('-logboek', '');
+    const card = document.querySelector(`.tool-card[data-tool-id="${baseToolId}"]`);
     if (card) {
         const infoValue = card.querySelector('.info-value');
         if (infoValue) {
             infoValue.textContent = formatDateTime(dateTime);
             infoValue.classList.remove('empty');
+        }
+        
+        // Update time-ago tag
+        const timeAgoTag = card.querySelector('.time-ago-tag');
+        if (timeAgoTag) {
+            timeAgoTag.textContent = getTimeAgo(dateTime);
+        } else if (dateTime) {
+            // Voeg time-ago tag toe als deze nog niet bestaat
+            const toolHeader = card.querySelector('.tool-header');
+            if (toolHeader && toolHeader.nextElementSibling) {
+                const newTag = document.createElement('div');
+                newTag.className = 'time-ago-tag';
+                newTag.textContent = getTimeAgo(dateTime);
+                toolHeader.parentNode.insertBefore(newTag, toolHeader.nextElementSibling);
+            }
         }
     }
 }
@@ -192,6 +264,48 @@ function formatDateTime(date) {
         });
     } catch (error) {
         return date.toString();
+    }
+}
+
+/**
+ * Bereken "X geleden" tekst
+ */
+function getTimeAgo(date) {
+    if (!date) return '';
+    
+    try {
+        const dateObj = date instanceof Date ? date : new Date(date);
+        if (isNaN(dateObj.getTime())) {
+            return '';
+        }
+        
+        const now = new Date();
+        const diffMs = now - dateObj;
+        const diffSeconds = Math.floor(diffMs / 1000);
+        const diffMinutes = Math.floor(diffSeconds / 60);
+        const diffHours = Math.floor(diffMinutes / 60);
+        const diffDays = Math.floor(diffHours / 24);
+        const diffWeeks = Math.floor(diffDays / 7);
+        const diffMonths = Math.floor(diffDays / 30);
+        
+        if (diffSeconds < 60) {
+            return 'Zojuist';
+        } else if (diffMinutes < 60) {
+            return `${diffMinutes} ${diffMinutes === 1 ? 'minuut' : 'minuten'} geleden`;
+        } else if (diffHours < 24) {
+            return `${diffHours} ${diffHours === 1 ? 'uur' : 'uren'} geleden`;
+        } else if (diffDays < 7) {
+            return `${diffDays} ${diffDays === 1 ? 'dag' : 'dagen'} geleden`;
+        } else if (diffWeeks < 4) {
+            return `${diffWeeks} ${diffWeeks === 1 ? 'week' : 'weken'} geleden`;
+        } else if (diffMonths < 12) {
+            return `${diffMonths} ${diffMonths === 1 ? 'maand' : 'maanden'} geleden`;
+        } else {
+            const diffYears = Math.floor(diffMonths / 12);
+            return `${diffYears} ${diffYears === 1 ? 'jaar' : 'jaren'} geleden`;
+        }
+    } catch (error) {
+        return '';
     }
 }
 
