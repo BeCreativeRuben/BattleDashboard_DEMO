@@ -28,12 +28,6 @@ const tools = [
         frequency: 'daily'
     },
     {
-        id: 'kuismachine-website',
-        title: 'Kuismachine website',
-        url: 'https://becreativeruben.github.io/BK_Overview_Demo/',
-        frequency: 'daily'
-    },
-    {
         id: 'kuismachine-logs',
         title: 'Kuismachine logs',
         url: '#',
@@ -182,30 +176,27 @@ async function createToolCard(tool) {
             const dateTimeStr = formatDateTime(logDate);
             const userName = lastLog.userName || 'Onbekend';
             
-            // Piste info
-            const pisteAInfo = [];
-            const pisteBInfo = [];
-            
-            if (lastLog.kuismachineGebruikt) {
-                if (lastLog.kuismachinePisteA) pisteAInfo.push('Kuismachine');
-                if (lastLog.kuismachinePisteB) pisteBInfo.push('Kuismachine');
-            }
-            if (lastLog.stofzuigerGebruikt) {
-                if (lastLog.stofzuigerPisteA) pisteAInfo.push('Stofzuiger');
-                if (lastLog.stofzuigerPisteB) pisteBInfo.push('Stofzuiger');
-            }
+            // Piste info - toon alleen als die piste gebruikt was
+            const pisteAUsed = (lastLog.kuismachineGebruikt && lastLog.kuismachinePisteA) || 
+                              (lastLog.stofzuigerGebruikt && lastLog.stofzuigerPisteA);
+            const pisteBUsed = (lastLog.kuismachineGebruikt && lastLog.kuismachinePisteB) || 
+                              (lastLog.stofzuigerGebruikt && lastLog.stofzuigerPisteB);
             
             kuismachineInfoHTML = `
-                ${pisteAInfo.length > 0 ? `
                 <div class="info-item">
-                    <span class="info-label">Baan A:</span>
+                    <span class="info-label">Laatst ingevuld:</span>
                     <span class="info-value">${escapeHtml(dateTimeStr)}</span>
                 </div>
+                ${pisteAUsed ? `
+                <div class="info-item">
+                    <span class="info-label">Baan A:</span>
+                    <span class="info-value">Laatst gekuist</span>
+                </div>
                 ` : ''}
-                ${pisteBInfo.length > 0 ? `
+                ${pisteBUsed ? `
                 <div class="info-item">
                     <span class="info-label">Baan B:</span>
-                    <span class="info-value">${escapeHtml(dateTimeStr)}</span>
+                    <span class="info-value">Laatst gekuist</span>
                 </div>
                 ` : ''}
                 ${lastLog.kuismachineGebruikt ? `
@@ -213,12 +204,24 @@ async function createToolCard(tool) {
                     <span class="info-label">Kuismachine uitgekuist?</span>
                     <span class="info-value">${lastLog.kuismachineUitgekuist ? 'Ja' : 'Nee'}</span>
                 </div>
+                ${!lastLog.kuismachineUitgekuist && lastLog.kuismachineReden ? `
+                <div class="info-item info-item-reason">
+                    <span class="info-label"></span>
+                    <span class="info-value info-value-reason">${escapeHtml(lastLog.kuismachineReden)}</span>
+                </div>
+                ` : ''}
                 ` : ''}
                 ${lastLog.stofzuigerGebruikt ? `
                 <div class="info-item">
                     <span class="info-label">Stofzuiger uitgekuist?</span>
                     <span class="info-value">${lastLog.stofzuigerUitgekuist ? 'Ja' : 'Nee'}</span>
                 </div>
+                ${!lastLog.stofzuigerUitgekuist && lastLog.stofzuigerReden ? `
+                <div class="info-item info-item-reason">
+                    <span class="info-label"></span>
+                    <span class="info-value info-value-reason">${escapeHtml(lastLog.stofzuigerReden)}</span>
+                </div>
+                ` : ''}
                 ` : ''}
                 <div class="info-item">
                     <span class="info-label">Door:</span>
@@ -783,21 +786,6 @@ function openKuismachineOverlay(event) {
     document.getElementById('kuismachine-reden-fields').style.display = 'none';
     document.getElementById('stofzuiger-reden-fields').style.display = 'none';
     
-    // Vul automatisch datum en tijd
-    const now = new Date();
-    const dateStr = now.toLocaleDateString('nl-NL', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-    const timeStr = now.toLocaleTimeString('nl-NL', {
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-    
-    document.getElementById('kuismachine-datum').value = dateStr;
-    document.getElementById('kuismachine-tijd').value = timeStr;
-    
     // Toon overlay
     overlay.style.display = 'flex';
     document.body.style.overflow = 'hidden';
@@ -827,6 +815,8 @@ function toggleMachineSection(machineType) {
         document.getElementById(`${machineType}-piste-a`).checked = false;
         document.getElementById(`${machineType}-piste-b`).checked = false;
         document.getElementById(`${machineType}-uitgekuist`).checked = false;
+        document.getElementById(`${machineType}-begintijd`).value = '';
+        document.getElementById(`${machineType}-eindtijd`).value = '';
         const redenFields = document.getElementById(`${machineType}-reden-fields`);
         if (redenFields) {
             redenFields.style.display = 'none';
@@ -856,6 +846,27 @@ function toggleUitgekuistFields(machineType) {
 }
 
 /**
+ * Valideer tijd formaat (accepteert zowel punt als komma)
+ */
+function validateTimeFormat(time, machineType) {
+    if (!time || time.trim() === '') {
+        return false;
+    }
+    
+    // Accepteert getallen met punt of komma als decimaal scheidingsteken
+    const timeRegex = /^[0-9]+([,\.][0-9]+)?$/;
+    return timeRegex.test(time.trim());
+}
+
+/**
+ * Converteer tijd naar komma format (punt wordt komma)
+ */
+function convertTimeToCommaFormat(time) {
+    if (!time) return '';
+    return time.trim().replace('.', ',');
+}
+
+/**
  * Valideer kuismachine formulier
  */
 function validateKuismachineForm(formData) {
@@ -871,8 +882,20 @@ function validateKuismachineForm(formData) {
         if (!formData.kuismachinePisteA && !formData.kuismachinePisteB) {
             errors.push('Selecteer minimaal één piste voor de kuismachine (A of B)');
         }
-        if (!formData.kuismachineUitgekuist && !formData.kuismachineReden) {
-            errors.push('Geef een reden op waarom de kuismachine niet uitgekuist kon worden');
+        if (!formData.kuismachineBegintijd || formData.kuismachineBegintijd.trim() === '') {
+            errors.push('Kuismachine begintijd is verplicht');
+        } else if (!validateTimeFormat(formData.kuismachineBegintijd, 'kuismachine')) {
+            errors.push('Kuismachine begintijd moet een getal zijn (bijv. 210,3 of 210.3)');
+        }
+        if (!formData.kuismachineEindtijd || formData.kuismachineEindtijd.trim() === '') {
+            errors.push('Kuismachine eindtijd is verplicht');
+        } else if (!validateTimeFormat(formData.kuismachineEindtijd, 'kuismachine')) {
+            errors.push('Kuismachine eindtijd moet een getal zijn (bijv. 210,3 of 210.3)');
+        }
+        if (!formData.kuismachineUitgekuist) {
+            if (!formData.kuismachineReden || formData.kuismachineReden.trim() === '') {
+                errors.push('Geef een reden op waarom de kuismachine niet uitgekuist kon worden');
+            }
         }
     }
     
@@ -881,8 +904,20 @@ function validateKuismachineForm(formData) {
         if (!formData.stofzuigerPisteA && !formData.stofzuigerPisteB) {
             errors.push('Selecteer minimaal één piste voor de stofzuiger (A of B)');
         }
-        if (!formData.stofzuigerUitgekuist && !formData.stofzuigerReden) {
-            errors.push('Geef een reden op waarom de stofzuiger niet uitgekuist kon worden');
+        if (!formData.stofzuigerBegintijd || formData.stofzuigerBegintijd.trim() === '') {
+            errors.push('Stofzuiger begintijd is verplicht');
+        } else if (!validateTimeFormat(formData.stofzuigerBegintijd, 'stofzuiger')) {
+            errors.push('Stofzuiger begintijd moet een getal zijn (bijv. 42,2 of 42.2)');
+        }
+        if (!formData.stofzuigerEindtijd || formData.stofzuigerEindtijd.trim() === '') {
+            errors.push('Stofzuiger eindtijd is verplicht');
+        } else if (!validateTimeFormat(formData.stofzuigerEindtijd, 'stofzuiger')) {
+            errors.push('Stofzuiger eindtijd moet een getal zijn (bijv. 42,2 of 42.2)');
+        }
+        if (!formData.stofzuigerUitgekuist) {
+            if (!formData.stofzuigerReden || formData.stofzuigerReden.trim() === '') {
+                errors.push('Geef een reden op waarom de stofzuiger niet uitgekuist kon worden');
+            }
         }
     }
     
@@ -904,11 +939,15 @@ async function handleKuismachineSubmit(event) {
         kuismachineGebruikt: document.getElementById('kuismachine-gebruikt').checked,
         kuismachinePisteA: document.getElementById('kuismachine-piste-a').checked,
         kuismachinePisteB: document.getElementById('kuismachine-piste-b').checked,
+        kuismachineBegintijd: document.getElementById('kuismachine-begintijd').value.trim(),
+        kuismachineEindtijd: document.getElementById('kuismachine-eindtijd').value.trim(),
         kuismachineUitgekuist: document.getElementById('kuismachine-uitgekuist').checked,
         kuismachineReden: document.getElementById('kuismachine-reden').value.trim(),
         stofzuigerGebruikt: document.getElementById('stofzuiger-gebruikt').checked,
         stofzuigerPisteA: document.getElementById('stofzuiger-piste-a').checked,
         stofzuigerPisteB: document.getElementById('stofzuiger-piste-b').checked,
+        stofzuigerBegintijd: document.getElementById('stofzuiger-begintijd').value.trim(),
+        stofzuigerEindtijd: document.getElementById('stofzuiger-eindtijd').value.trim(),
         stofzuigerUitgekuist: document.getElementById('stofzuiger-uitgekuist').checked,
         stofzuigerReden: document.getElementById('stofzuiger-reden').value.trim()
     };
@@ -926,6 +965,20 @@ async function handleKuismachineSubmit(event) {
     formData.timestamp = now.getTime();
     formData.dateTime = now.toISOString();
     formData.userName = currentUserName;
+    
+    // Converteer tijden naar komma format (punt wordt komma)
+    if (formData.kuismachineBegintijd) {
+        formData.kuismachineBegintijd = convertTimeToCommaFormat(formData.kuismachineBegintijd);
+    }
+    if (formData.kuismachineEindtijd) {
+        formData.kuismachineEindtijd = convertTimeToCommaFormat(formData.kuismachineEindtijd);
+    }
+    if (formData.stofzuigerBegintijd) {
+        formData.stofzuigerBegintijd = convertTimeToCommaFormat(formData.stofzuigerBegintijd);
+    }
+    if (formData.stofzuigerEindtijd) {
+        formData.stofzuigerEindtijd = convertTimeToCommaFormat(formData.stofzuigerEindtijd);
+    }
     
     // Disable submit button
     const submitButton = event.target.querySelector('button[type="submit"]');
