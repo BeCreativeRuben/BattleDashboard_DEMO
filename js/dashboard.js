@@ -164,9 +164,71 @@ async function createToolCard(tool) {
         ? '<span class="frequency-badge frequency-daily">Dagelijks</span>'
         : '<span class="frequency-badge frequency-weekly">Wekelijks</span>';
 
+    // Speciale behandeling voor kuismachine-logs
+    let kuismachineInfoHTML = '';
+    if (tool.id === 'kuismachine-logs') {
+        const lastLog = await getLastKuismachineLog();
+        if (lastLog) {
+            const logDate = new Date(lastLog.timestamp);
+            const dateTimeStr = formatDateTime(logDate);
+            const userName = lastLog.userName || 'Onbekend';
+            
+            // Piste info
+            const pisteAInfo = [];
+            const pisteBInfo = [];
+            
+            if (lastLog.kuismachineGebruikt) {
+                if (lastLog.kuismachinePisteA) pisteAInfo.push('Kuismachine');
+                if (lastLog.kuismachinePisteB) pisteBInfo.push('Kuismachine');
+            }
+            if (lastLog.stofzuigerGebruikt) {
+                if (lastLog.stofzuigerPisteA) pisteAInfo.push('Stofzuiger');
+                if (lastLog.stofzuigerPisteB) pisteBInfo.push('Stofzuiger');
+            }
+            
+            kuismachineInfoHTML = `
+                ${pisteAInfo.length > 0 ? `
+                <div class="info-item">
+                    <span class="info-label">Baan A:</span>
+                    <span class="info-value">${escapeHtml(dateTimeStr)}</span>
+                </div>
+                ` : ''}
+                ${pisteBInfo.length > 0 ? `
+                <div class="info-item">
+                    <span class="info-label">Baan B:</span>
+                    <span class="info-value">${escapeHtml(dateTimeStr)}</span>
+                </div>
+                ` : ''}
+                ${lastLog.kuismachineGebruikt ? `
+                <div class="info-item">
+                    <span class="info-label">Kuismachine uitgekuist?</span>
+                    <span class="info-value">${lastLog.kuismachineUitgekuist ? 'Ja' : 'Nee'}</span>
+                </div>
+                ` : ''}
+                ${lastLog.stofzuigerGebruikt ? `
+                <div class="info-item">
+                    <span class="info-label">Stofzuiger uitgekuist?</span>
+                    <span class="info-value">${lastLog.stofzuigerUitgekuist ? 'Ja' : 'Nee'}</span>
+                </div>
+                ` : ''}
+                <div class="info-item">
+                    <span class="info-label">Door:</span>
+                    <span class="info-value info-value-user">${escapeHtml(userName)}</span>
+                </div>
+            `;
+        }
+    }
+    
     // Voor Kart Weekly: twee knoppen
     let actionsHTML = '';
-    if (tool.hasMultipleLinks && tool.logboekUrl) {
+    if (tool.id === 'kuismachine-logs') {
+        // Speciale button voor kuismachine overlay
+        actionsHTML = `
+            <button class="tool-link-button" onclick="openKuismachineOverlay(event)">
+                → Ga naar tool
+            </button>
+        `;
+    } else if (tool.hasMultipleLinks && tool.logboekUrl) {
         actionsHTML = `
             <a href="${escapeHtml(tool.url)}" 
                class="tool-link-button" 
@@ -201,6 +263,7 @@ async function createToolCard(tool) {
         </div>
         ${timeAgoText ? `<div class="time-ago-tag">${escapeHtml(timeAgoText)}</div>` : ''}
         <div class="tool-info">
+            ${tool.id === 'kuismachine-logs' ? kuismachineInfoHTML : `
             <div class="info-item">
                 <span class="info-label">Laatst geklikt:</span>
                 <span class="info-value ${!lastClick ? 'empty' : ''}">${escapeHtml(lastClickText)}</span>
@@ -211,6 +274,7 @@ async function createToolCard(tool) {
                 <span class="info-value info-value-user">${escapeHtml(lastClickUserName)}</span>
             </div>
             ` : ''}
+            `}
         </div>
         <div class="tool-actions">
             ${actionsHTML}
@@ -611,4 +675,275 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+/**
+ * Open kuismachine overlay
+ */
+function openKuismachineOverlay(event) {
+    if (event) {
+        event.preventDefault();
+    }
+    
+    if (!currentUserName) {
+        showNameModal();
+        return;
+    }
+    
+    const overlay = document.getElementById('kuismachine-overlay');
+    const form = document.getElementById('kuismachine-form');
+    const errorDiv = document.getElementById('kuismachine-form-error');
+    
+    // Reset formulier
+    form.reset();
+    errorDiv.style.display = 'none';
+    errorDiv.textContent = '';
+    
+    // Verberg alle machine velden
+    document.getElementById('kuismachine-fields').style.display = 'none';
+    document.getElementById('stofzuiger-fields').style.display = 'none';
+    document.getElementById('kuismachine-reden-fields').style.display = 'none';
+    document.getElementById('stofzuiger-reden-fields').style.display = 'none';
+    
+    // Vul automatisch datum en tijd
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('nl-NL', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    const timeStr = now.toLocaleTimeString('nl-NL', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    document.getElementById('kuismachine-datum').value = dateStr;
+    document.getElementById('kuismachine-tijd').value = timeStr;
+    
+    // Toon overlay
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Sluit kuismachine overlay
+ */
+function closeKuismachineOverlay() {
+    const overlay = document.getElementById('kuismachine-overlay');
+    overlay.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+/**
+ * Toggle machine section velden
+ */
+function toggleMachineSection(machineType) {
+    const checkbox = document.getElementById(`${machineType}-gebruikt`);
+    const fields = document.getElementById(`${machineType}-fields`);
+    
+    if (checkbox.checked) {
+        fields.style.display = 'block';
+    } else {
+        fields.style.display = 'none';
+        // Reset velden
+        document.getElementById(`${machineType}-piste-a`).checked = false;
+        document.getElementById(`${machineType}-piste-b`).checked = false;
+        document.getElementById(`${machineType}-uitgekuist`).checked = false;
+        const redenFields = document.getElementById(`${machineType}-reden-fields`);
+        if (redenFields) {
+            redenFields.style.display = 'none';
+            document.getElementById(`${machineType}-reden`).value = '';
+        }
+    }
+}
+
+/**
+ * Toggle uitgekuist reden velden
+ */
+function toggleUitgekuistFields(machineType) {
+    const checkbox = document.getElementById(`${machineType}-uitgekuist`);
+    const redenFields = document.getElementById(`${machineType}-reden-fields`);
+    const redenInput = document.getElementById(`${machineType}-reden`);
+    
+    if (!checkbox.checked) {
+        // Niet uitgekuist - toon reden veld
+        redenFields.style.display = 'block';
+        redenInput.required = true;
+    } else {
+        // Wel uitgekuist - verberg reden veld
+        redenFields.style.display = 'none';
+        redenInput.required = false;
+        redenInput.value = '';
+    }
+}
+
+/**
+ * Valideer kuismachine formulier
+ */
+function validateKuismachineForm(formData) {
+    const errors = [];
+    
+    // Minimaal één machine moet gebruikt zijn
+    if (!formData.kuismachineGebruikt && !formData.stofzuigerGebruikt) {
+        errors.push('Selecteer minimaal één machine (kuismachine of stofzuiger)');
+    }
+    
+    // Valideer kuismachine velden
+    if (formData.kuismachineGebruikt) {
+        if (!formData.kuismachinePisteA && !formData.kuismachinePisteB) {
+            errors.push('Selecteer minimaal één piste voor de kuismachine (A of B)');
+        }
+        if (!formData.kuismachineUitgekuist && !formData.kuismachineReden) {
+            errors.push('Geef een reden op waarom de kuismachine niet uitgekuist kon worden');
+        }
+    }
+    
+    // Valideer stofzuiger velden
+    if (formData.stofzuigerGebruikt) {
+        if (!formData.stofzuigerPisteA && !formData.stofzuigerPisteB) {
+            errors.push('Selecteer minimaal één piste voor de stofzuiger (A of B)');
+        }
+        if (!formData.stofzuigerUitgekuist && !formData.stofzuigerReden) {
+            errors.push('Geef een reden op waarom de stofzuiger niet uitgekuist kon worden');
+        }
+    }
+    
+    return errors;
+}
+
+/**
+ * Handle kuismachine formulier submit
+ */
+async function handleKuismachineSubmit(event) {
+    event.preventDefault();
+    
+    const errorDiv = document.getElementById('kuismachine-form-error');
+    errorDiv.style.display = 'none';
+    errorDiv.textContent = '';
+    
+    // Verzamel formulier data
+    const formData = {
+        kuismachineGebruikt: document.getElementById('kuismachine-gebruikt').checked,
+        kuismachinePisteA: document.getElementById('kuismachine-piste-a').checked,
+        kuismachinePisteB: document.getElementById('kuismachine-piste-b').checked,
+        kuismachineUitgekuist: document.getElementById('kuismachine-uitgekuist').checked,
+        kuismachineReden: document.getElementById('kuismachine-reden').value.trim(),
+        stofzuigerGebruikt: document.getElementById('stofzuiger-gebruikt').checked,
+        stofzuigerPisteA: document.getElementById('stofzuiger-piste-a').checked,
+        stofzuigerPisteB: document.getElementById('stofzuiger-piste-b').checked,
+        stofzuigerUitgekuist: document.getElementById('stofzuiger-uitgekuist').checked,
+        stofzuigerReden: document.getElementById('stofzuiger-reden').value.trim()
+    };
+    
+    // Valideer
+    const errors = validateKuismachineForm(formData);
+    if (errors.length > 0) {
+        errorDiv.textContent = errors.join('. ');
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    // Voeg datum en tijd toe
+    const now = new Date();
+    formData.timestamp = now.getTime();
+    formData.dateTime = now.toISOString();
+    formData.userName = currentUserName;
+    
+    // Disable submit button
+    const submitButton = event.target.querySelector('button[type="submit"]');
+    const originalText = submitButton.textContent;
+    submitButton.disabled = true;
+    submitButton.textContent = 'Opslaan...';
+    
+    try {
+        // Sla op in Firebase
+        await saveKuismachineLog(formData);
+        
+        // Success - sluit overlay en update card
+        closeKuismachineOverlay();
+        
+        // Reload dashboard om card te updaten
+        await loadDashboard();
+        await setupFirebaseListeners();
+        
+    } catch (error) {
+        console.error('Error saving kuismachine log:', error);
+        errorDiv.textContent = 'Fout bij opslaan: ' + error.message;
+        errorDiv.style.display = 'block';
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = originalText;
+    }
+}
+
+/**
+ * Sla kuismachine log op in Firebase
+ */
+async function saveKuismachineLog(formData) {
+    if (!currentUserName) {
+        throw new Error('Geen gebruikersnaam');
+    }
+    
+    if (!database || !firebaseFunctions) {
+        throw new Error('Firebase niet beschikbaar');
+    }
+    
+    try {
+        const { ref, push, set } = firebaseFunctions;
+        
+        // Sla volledige log op
+        const logsRef = ref(database, 'logs/kuismachine-logs');
+        await push(logsRef, formData);
+        
+        // Update laatste klik voor tracking
+        const lastClickRef = ref(database, 'clicks/kuismachine-logs');
+        await set(lastClickRef, {
+            timestamp: formData.timestamp,
+            dateTime: formData.dateTime,
+            userName: formData.userName
+        });
+        
+        console.log('Kuismachine log opgeslagen in Firebase');
+    } catch (error) {
+        console.error('Error saving to Firebase:', error);
+        throw error;
+    }
+}
+
+/**
+ * Haal laatste kuismachine log op uit Firebase
+ */
+async function getLastKuismachineLog() {
+    if (!database || !firebaseFunctions) {
+        return null;
+    }
+    
+    try {
+        const { ref, get } = firebaseFunctions;
+        const logsRef = ref(database, 'logs/kuismachine-logs');
+        
+        // Haal alle logs op
+        const snapshot = await get(logsRef);
+        
+        if (snapshot.exists()) {
+            const logs = snapshot.val();
+            // Vind de log met de hoogste timestamp
+            let lastLog = null;
+            let lastTimestamp = 0;
+            
+            Object.keys(logs).forEach(logId => {
+                const log = logs[logId];
+                if (log.timestamp && log.timestamp > lastTimestamp) {
+                    lastTimestamp = log.timestamp;
+                    lastLog = log;
+                }
+            });
+            
+            return lastLog;
+        }
+    } catch (error) {
+        console.error('Error loading kuismachine log from Firebase:', error);
+    }
+    
+    return null;
 }
