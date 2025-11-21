@@ -20,6 +20,31 @@
         </main>
     </div>
 
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, set, get, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        
+        // Firebase configuratie
+        const firebaseConfig = {
+            apiKey: "AIzaSyDPLYMn7SkaYUjlyk1LjAY3mv-EaUz96Fw",
+            authDomain: "battlekartoverview.firebaseapp.com",
+            databaseURL: "https://battlekartoverview-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "battlekartoverview",
+            storageBucket: "battlekartoverview.firebasestorage.app",
+            messagingSenderId: "627461116548",
+            appId: "1:627461116548:web:8fb3b10824f3236105a8d1",
+            measurementId: "G-RVLESW1G3L"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        
+        // Maak database en functies beschikbaar voor dashboard.js
+        window.firebaseDatabase = database;
+        window.firebaseDatabaseFunctions = { ref, set, get, onValue };
+    </script>
     <script src="js/dashboard.js"></script>
 </body>
 </html>

@@ -57,15 +57,47 @@ const tools = [
     }
 ];
 
+// Firebase database referentie en functies (wordt gezet in index.html)
+let database = null;
+let firebaseFunctions = null;
+
+// Wacht tot Firebase geladen is
+function waitForFirebase() {
+    return new Promise((resolve) => {
+        if (window.firebaseDatabase && window.firebaseDatabaseFunctions) {
+            database = window.firebaseDatabase;
+            firebaseFunctions = window.firebaseDatabaseFunctions;
+            resolve();
+        } else {
+            // Wacht tot Firebase geladen is (max 5 seconden)
+            let attempts = 0;
+            const checkInterval = setInterval(() => {
+                if (window.firebaseDatabase && window.firebaseDatabaseFunctions) {
+                    database = window.firebaseDatabase;
+                    firebaseFunctions = window.firebaseDatabaseFunctions;
+                    clearInterval(checkInterval);
+                    resolve();
+                } else if (attempts++ > 50) {
+                    clearInterval(checkInterval);
+                    console.warn('Firebase niet geladen, gebruik alleen localStorage');
+                    resolve();
+                }
+            }, 100);
+        }
+    });
+}
+
 // Laad dashboard bij pagina load
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await waitForFirebase();
     loadDashboard();
+    setupFirebaseListeners();
 });
 
 /**
  * Laad dashboard en toon alle tools
  */
-function loadDashboard() {
+async function loadDashboard() {
     const container = document.getElementById('tools-container');
     container.innerHTML = '';
 
@@ -74,10 +106,10 @@ function loadDashboard() {
     const weeklyTools = tools.filter(tool => tool.frequency === 'weekly');
 
     // Toon dagelijkse taken
-    dailyTools.forEach(tool => {
-        const toolCard = createToolCard(tool);
+    for (const tool of dailyTools) {
+        const toolCard = await createToolCard(tool);
         container.appendChild(toolCard);
-    });
+    }
 
     // Voeg scheidingslijn toe tussen dagelijkse en wekelijkse taken
     if (dailyTools.length > 0 && weeklyTools.length > 0) {
@@ -88,22 +120,22 @@ function loadDashboard() {
     }
 
     // Toon wekelijkse taken
-    weeklyTools.forEach(tool => {
-        const toolCard = createToolCard(tool);
+    for (const tool of weeklyTools) {
+        const toolCard = await createToolCard(tool);
         container.appendChild(toolCard);
-    });
+    }
 }
 
 /**
  * Maak een tool card element
  */
-function createToolCard(tool) {
+async function createToolCard(tool) {
     const card = document.createElement('div');
     card.className = 'tool-card';
     card.setAttribute('data-tool-id', tool.id);
     
-    // Haal laatste klik tijd op
-    const lastClick = getLastClick(tool.id);
+    // Haal laatste klik tijd op (async)
+    const lastClick = await getLastClick(tool.id);
     const lastClickText = lastClick 
         ? formatDateTime(lastClick) 
         : 'Nog niet geklikt';
@@ -182,24 +214,54 @@ function handleLinkClick(toolId, event) {
 }
 
 /**
- * Sla laatste klik tijd op in localStorage
+ * Sla laatste klik tijd op in Firebase en localStorage
  */
-function saveLastClick(toolId, dateTime) {
+async function saveLastClick(toolId, dateTime) {
+    const clickData = {
+        timestamp: dateTime.getTime(),
+        dateTime: dateTime.toISOString()
+    };
+    
+    // Sla altijd op in localStorage als fallback
     try {
-        const clickData = {
-            timestamp: dateTime.getTime(),
-            dateTime: dateTime.toISOString()
-        };
         localStorage.setItem(`lastClick_${toolId}`, JSON.stringify(clickData));
     } catch (error) {
-        console.error('Error saving click data:', error);
+        console.error('Error saving to localStorage:', error);
+    }
+    
+    // Sla ook op in Firebase als beschikbaar
+    if (database && firebaseFunctions) {
+        try {
+            const { ref, set } = firebaseFunctions;
+            const clickRef = ref(database, `clicks/${toolId}`);
+            await set(clickRef, clickData);
+        } catch (error) {
+            console.error('Error saving to Firebase:', error);
+        }
     }
 }
 
 /**
- * Haal laatste klik tijd op uit localStorage
+ * Haal laatste klik tijd op uit Firebase of localStorage
  */
-function getLastClick(toolId) {
+async function getLastClick(toolId) {
+    // Probeer eerst Firebase (als beschikbaar)
+    if (database && firebaseFunctions) {
+        try {
+            const { ref, get } = firebaseFunctions;
+            const clickRef = ref(database, `clicks/${toolId}`);
+            const snapshot = await get(clickRef);
+            
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                return new Date(data.timestamp);
+            }
+        } catch (error) {
+            console.error('Error loading from Firebase:', error);
+        }
+    }
+    
+    // Fallback naar localStorage
     try {
         const stored = localStorage.getItem(`lastClick_${toolId}`);
         if (stored) {
@@ -207,8 +269,9 @@ function getLastClick(toolId) {
             return new Date(data.timestamp);
         }
     } catch (error) {
-        console.error('Error loading click data:', error);
+        console.error('Error loading from localStorage:', error);
     }
+    
     return null;
 }
 
@@ -240,6 +303,50 @@ function updateLastClickDisplay(toolId, dateTime) {
                 toolHeader.parentNode.insertBefore(newTag, toolHeader.nextElementSibling);
             }
         }
+    }
+}
+
+/**
+ * Setup Firebase real-time listeners voor alle tools
+ */
+async function setupFirebaseListeners() {
+    if (!database || !firebaseFunctions) {
+        console.log('Firebase niet beschikbaar, geen real-time sync');
+        return;
+    }
+
+    try {
+        const { ref, onValue } = firebaseFunctions;
+        const clicksRef = ref(database, 'clicks');
+        
+        // Luister naar alle clicks
+        onValue(clicksRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const allClicks = snapshot.val();
+                
+                // Update elke tool die een update heeft gekregen
+                Object.keys(allClicks).forEach(toolId => {
+                    const clickData = allClicks[toolId];
+                    const dateTime = new Date(clickData.timestamp);
+                    
+                    // Update de weergave
+                    updateLastClickDisplay(toolId, dateTime);
+                    
+                    // Update ook localStorage als backup
+                    try {
+                        localStorage.setItem(`lastClick_${toolId}`, JSON.stringify(clickData));
+                    } catch (error) {
+                        console.error('Error updating localStorage:', error);
+                    }
+                });
+            }
+        }, (error) => {
+            console.error('Error in Firebase listener:', error);
+        });
+        
+        console.log('Firebase real-time listeners actief');
+    } catch (error) {
+        console.error('Error setting up Firebase listeners:', error);
     }
 }
 
