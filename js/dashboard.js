@@ -61,6 +61,9 @@ const tools = [
 let database = null;
 let firebaseFunctions = null;
 
+// Huidige gebruiker naam
+let currentUserName = null;
+
 // Wacht tot Firebase geladen is
 function waitForFirebase() {
     return new Promise((resolve) => {
@@ -90,8 +93,19 @@ function waitForFirebase() {
 // Laad dashboard bij pagina load
 document.addEventListener('DOMContentLoaded', async () => {
     await waitForFirebase();
-    loadDashboard();
-    setupFirebaseListeners();
+    
+    // Check of er al een naam is opgeslagen
+    currentUserName = getUserName();
+    
+    if (!currentUserName) {
+        // Toon naam invoer modal
+        showNameModal();
+    } else {
+        // Toon dashboard
+        showDashboard();
+        loadDashboard();
+        setupFirebaseListeners();
+    }
 });
 
 /**
@@ -199,42 +213,158 @@ async function createToolCard(tool) {
 }
 
 /**
+ * Haal gebruikersnaam op uit localStorage
+ */
+function getUserName() {
+    try {
+        return localStorage.getItem('userName');
+    } catch (error) {
+        console.error('Error getting user name:', error);
+        return null;
+    }
+}
+
+/**
+ * Sla gebruikersnaam op in localStorage
+ */
+function saveUserName(name) {
+    try {
+        localStorage.setItem('userName', name.trim());
+        currentUserName = name.trim();
+    } catch (error) {
+        console.error('Error saving user name:', error);
+    }
+}
+
+/**
+ * Toon naam invoer modal
+ */
+function showNameModal() {
+    const modal = document.getElementById('name-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.getElementById('user-name-input').focus();
+    }
+}
+
+/**
+ * Verberg naam invoer modal
+ */
+function hideNameModal() {
+    const modal = document.getElementById('name-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+/**
+ * Toon dashboard
+ */
+function showDashboard() {
+    const container = document.getElementById('main-container');
+    const userNameDisplay = document.getElementById('current-user-name');
+    
+    if (container) {
+        container.style.display = 'block';
+    }
+    
+    if (userNameDisplay && currentUserName) {
+        userNameDisplay.textContent = currentUserName;
+    }
+}
+
+/**
+ * Handle naam formulier submit
+ */
+function handleNameSubmit(event) {
+    event.preventDefault();
+    
+    const nameInput = document.getElementById('user-name-input');
+    const userName = nameInput.value.trim();
+    
+    if (userName && userName.length > 0) {
+        saveUserName(userName);
+        hideNameModal();
+        showDashboard();
+        loadDashboard();
+        setupFirebaseListeners();
+    }
+}
+
+/**
+ * Wijzig gebruikersnaam
+ */
+function changeUserName() {
+    const nameInput = document.getElementById('user-name-input');
+    if (nameInput && currentUserName) {
+        nameInput.value = currentUserName;
+    }
+    showNameModal();
+}
+
+/**
  * Handle link click - log de klik tijd
  */
 function handleLinkClick(toolId, event) {
+    // Check of er een gebruikersnaam is
+    if (!currentUserName) {
+        showNameModal();
+        return;
+    }
+    
     // Log de klik tijd
     const now = new Date();
     
     // Voor logboek clicks, sla op onder de basis toolId
     const baseToolId = toolId.replace('-logboek', '');
-    saveLastClick(baseToolId, now);
+    saveClickLog(baseToolId, now);
     
     // Update de weergave
     updateLastClickDisplay(baseToolId, now);
 }
 
 /**
- * Sla laatste klik tijd op in Firebase en localStorage
+ * Sla volledige click log op in Firebase (met gebruikersnaam en geschiedenis)
  */
-async function saveLastClick(toolId, dateTime) {
+async function saveClickLog(toolId, dateTime) {
+    if (!currentUserName) {
+        console.warn('Geen gebruikersnaam, kan click niet loggen');
+        return;
+    }
+    
     const clickData = {
+        userName: currentUserName,
+        toolId: toolId,
         timestamp: dateTime.getTime(),
         dateTime: dateTime.toISOString()
     };
     
-    // Sla altijd op in localStorage als fallback
+    // Sla ook op in localStorage als laatste klik (voor fallback)
     try {
-        localStorage.setItem(`lastClick_${toolId}`, JSON.stringify(clickData));
+        localStorage.setItem(`lastClick_${toolId}`, JSON.stringify({
+            timestamp: dateTime.getTime(),
+            dateTime: dateTime.toISOString(),
+            userName: currentUserName
+        }));
     } catch (error) {
         console.error('Error saving to localStorage:', error);
     }
     
-    // Sla ook op in Firebase als beschikbaar
+    // Sla volledige log op in Firebase (push = voeg toe, niet overschrijf)
     if (database && firebaseFunctions) {
         try {
-            const { ref, set } = firebaseFunctions;
-            const clickRef = ref(database, `clicks/${toolId}`);
-            await set(clickRef, clickData);
+            const { ref, push } = firebaseFunctions;
+            const logsRef = ref(database, `logs/${toolId}`);
+            await push(logsRef, clickData);
+            
+            // Sla ook laatste klik op voor snelle toegang
+            const lastClickRef = ref(database, `clicks/${toolId}`);
+            const { set } = firebaseFunctions;
+            await set(lastClickRef, {
+                timestamp: dateTime.getTime(),
+                dateTime: dateTime.toISOString(),
+                userName: currentUserName
+            });
         } catch (error) {
             console.error('Error saving to Firebase:', error);
         }
@@ -319,7 +449,7 @@ async function setupFirebaseListeners() {
         const { ref, onValue } = firebaseFunctions;
         const clicksRef = ref(database, 'clicks');
         
-        // Luister naar alle clicks
+        // Luister naar alle clicks (laatste klik per tool)
         onValue(clicksRef, (snapshot) => {
             if (snapshot.exists()) {
                 const allClicks = snapshot.val();
@@ -345,6 +475,7 @@ async function setupFirebaseListeners() {
         });
         
         console.log('Firebase real-time listeners actief');
+        console.log('Alle click logs zijn beschikbaar in Firebase onder: logs/{toolId}/');
     } catch (error) {
         console.error('Error setting up Firebase listeners:', error);
     }

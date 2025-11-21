@@ -221,6 +221,132 @@ header h1 {
     white-space: nowrap;
 }
 
+/* Naam invoer modal */
+.name-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.name-modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+.name-modal-content {
+    position: relative;
+    background: white;
+    border-radius: 16px;
+    padding: 40px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    z-index: 10001;
+    animation: slideUp 0.3s ease-out;
+}
+
+.name-modal-content h2 {
+    margin: 0 0 12px 0;
+    font-size: 1.8rem;
+    color: #333;
+    text-align: center;
+}
+
+.name-modal-content p {
+    margin: 0 0 24px 0;
+    color: #666;
+    text-align: center;
+    font-size: 1rem;
+}
+
+#name-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+#user-name-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+#user-name-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.name-modal-actions {
+    display: flex;
+    justify-content: center;
+}
+
+.user-info {
+    margin-top: 16px;
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.user-info span {
+    color: white;
+    font-size: 0.95rem;
+}
+
+.user-info strong {
+    color: white;
+    font-weight: 600;
+}
+
+.btn-change-name {
+    padding: 6px 16px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-change-name:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     header h1 {
@@ -247,5 +373,18 @@ header h1 {
 
     .subtitle {
         font-size: 1rem;
+    }
+
+    .name-modal-content {
+        padding: 30px 20px;
+    }
+
+    .name-modal-content h2 {
+        font-size: 1.5rem;
+    }
+
+    .user-info {
+        flex-direction: column;
+        text-align: center;
     }
 }
