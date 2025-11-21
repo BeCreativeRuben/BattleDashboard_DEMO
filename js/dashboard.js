@@ -176,29 +176,34 @@ async function createToolCard(tool) {
             const dateTimeStr = formatDateTime(logDate);
             const userName = lastLog.userName || 'Onbekend';
             
-            // Piste info - toon alleen als die piste gebruikt was
-            const pisteAUsed = (lastLog.kuismachineGebruikt && lastLog.kuismachinePisteA) || 
-                              (lastLog.stofzuigerGebruikt && lastLog.stofzuigerPisteA);
-            const pisteBUsed = (lastLog.kuismachineGebruikt && lastLog.kuismachinePisteB) || 
-                              (lastLog.stofzuigerGebruikt && lastLog.stofzuigerPisteB);
+            // Bepaal status per baan
+            const baanAKuismachine = lastLog.kuismachineGebruikt && lastLog.kuismachinePisteA;
+            const baanAStofzuiger = lastLog.stofzuigerGebruikt && lastLog.stofzuigerPisteA;
+            const baanBKuismachine = lastLog.kuismachineGebruikt && lastLog.kuismachinePisteB;
+            const baanBStofzuiger = lastLog.stofzuigerGebruikt && lastLog.stofzuigerPisteB;
+            
+            // Helper functie voor checkmark
+            const getCheckmark = (value) => value ? '<span class="checkmark-yes">✓</span> JA' : '<span class="checkmark-no">✗</span> NEE';
             
             kuismachineInfoHTML = `
                 <div class="info-item">
                     <span class="info-label">Laatst ingevuld:</span>
                     <span class="info-value">${escapeHtml(dateTimeStr)}</span>
                 </div>
-                ${pisteAUsed ? `
                 <div class="info-item">
                     <span class="info-label">Baan A:</span>
-                    <span class="info-value">Laatst gekuist</span>
+                    <span class="info-value">
+                        Kuismachine ${getCheckmark(baanAKuismachine)}, 
+                        Stofzuiger ${getCheckmark(baanAStofzuiger)}
+                    </span>
                 </div>
-                ` : ''}
-                ${pisteBUsed ? `
                 <div class="info-item">
                     <span class="info-label">Baan B:</span>
-                    <span class="info-value">Laatst gekuist</span>
+                    <span class="info-value">
+                        Kuismachine ${getCheckmark(baanBKuismachine)}, 
+                        Stofzuiger ${getCheckmark(baanBStofzuiger)}
+                    </span>
                 </div>
-                ` : ''}
                 ${lastLog.kuismachineGebruikt ? `
                 <div class="info-item">
                     <span class="info-label">Kuismachine uitgekuist?</span>
@@ -783,8 +788,16 @@ function openKuismachineOverlay(event) {
     // Verberg alle machine velden
     document.getElementById('kuismachine-fields').style.display = 'none';
     document.getElementById('stofzuiger-fields').style.display = 'none';
-    document.getElementById('kuismachine-reden-fields').style.display = 'none';
-    document.getElementById('stofzuiger-reden-fields').style.display = 'none';
+    
+    // Reset uitgekuist checkboxes en reden velden
+    document.getElementById('kuismachine-uitgekuist').checked = false;
+    document.getElementById('stofzuiger-uitgekuist').checked = false;
+    document.getElementById('kuismachine-reden').value = '';
+    document.getElementById('stofzuiger-reden').value = '';
+    
+    // Update required status voor reden velden
+    toggleUitgekuistFields('kuismachine');
+    toggleUitgekuistFields('stofzuiger');
     
     // Toon overlay
     overlay.style.display = 'flex';
@@ -817,11 +830,9 @@ function toggleMachineSection(machineType) {
         document.getElementById(`${machineType}-uitgekuist`).checked = false;
         document.getElementById(`${machineType}-begintijd`).value = '';
         document.getElementById(`${machineType}-eindtijd`).value = '';
-        const redenFields = document.getElementById(`${machineType}-reden-fields`);
-        if (redenFields) {
-            redenFields.style.display = 'none';
-            document.getElementById(`${machineType}-reden`).value = '';
-        }
+        document.getElementById(`${machineType}-reden`).value = '';
+        // Reset required status
+        toggleUitgekuistFields(machineType);
     }
 }
 
@@ -832,16 +843,21 @@ function toggleUitgekuistFields(machineType) {
     const checkbox = document.getElementById(`${machineType}-uitgekuist`);
     const redenFields = document.getElementById(`${machineType}-reden-fields`);
     const redenInput = document.getElementById(`${machineType}-reden`);
+    const requiredSpan = document.getElementById(`${machineType}-reden-required`);
     
+    // Veld is altijd zichtbaar, alleen required status verandert
     if (!checkbox.checked) {
-        // Niet uitgekuist - toon reden veld
-        redenFields.style.display = 'block';
+        // Niet uitgekuist - maak veld verplicht
         redenInput.required = true;
+        if (requiredSpan) {
+            requiredSpan.style.display = 'inline';
+        }
     } else {
-        // Wel uitgekuist - verberg reden veld
-        redenFields.style.display = 'none';
+        // Wel uitgekuist - veld is niet verplicht
         redenInput.required = false;
-        redenInput.value = '';
+        if (requiredSpan) {
+            requiredSpan.style.display = 'none';
+        }
     }
 }
 

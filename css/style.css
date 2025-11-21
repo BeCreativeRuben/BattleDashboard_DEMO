@@ -162,6 +162,20 @@ header h1 {
     line-height: 1.4;
 }
 
+.checkmark-yes {
+    color: #22c55e;
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-right: 4px;
+}
+
+.checkmark-no {
+    color: #ef4444;
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-right: 4px;
+}
+
 .tool-actions {
     margin-top: 16px;
     padding-top: 16px;
