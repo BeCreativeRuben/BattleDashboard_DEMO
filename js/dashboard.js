@@ -51,6 +51,206 @@ const tools = [
     }
 ];
 
+// Tutorial data voor elk document
+const tutorials = {
+    'cash-payments': {
+        title: 'Cash & Payments Employees - Tutorial',
+        description: 'Leer hoe je het Cash & Payments document correct invult en waarom dit belangrijk is.',
+        sections: [
+            {
+                title: 'Waarom invullen?',
+                content: 'Dit document helpt ons om alle cash transacties en employee payments bij te houden. Het is belangrijk voor financiële tracking en rapportage.',
+                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Cash+Payments+1'
+            },
+            {
+                title: 'Stap 1: Open het document',
+                content: 'Klik op de link om het Google Sheets document te openen. Zorg dat je de juiste rechten hebt om te bewerken.',
+                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Cash+Payments+2'
+            },
+            {
+                title: 'Stap 2: Vul de gegevens in',
+                content: 'Vul voor elke transactie de datum, het bedrag, de beschrijving en de betrokken employee in. Controleer altijd of de bedragen kloppen.',
+                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Cash+Payments+3'
+            },
+            {
+                title: 'Tips',
+                content: '• Sla regelmatig op tijdens het invullen\n• Controleer de totalen aan het einde\n• Neem contact op bij twijfel over een transactie',
+                image: null
+            }
+        ]
+    },
+    'kart-daily-logboek': {
+        title: 'Kart Daily Logboek - Tutorial',
+        description: 'Ontdek hoe je het dagelijkse kart logboek correct invult en wat er allemaal in moet staan.',
+        sections: [
+            {
+                title: 'Waarom invullen?',
+                content: 'Het kart daily logboek helpt ons om de status van alle karts bij te houden, inclusief onderhoud, reparaties en gebruik. Dit is essentieel voor veiligheid en planning.',
+                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Kart+Daily+1'
+            },
+            {
+                title: 'Stap 1: Download het bestand',
+                content: 'Klik op de link om het Excel bestand te downloaden. Open het in Excel of een compatibel programma.',
+                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Kart+Daily+2'
+            },
+            {
+                title: 'Stap 2: Vul per kart in',
+                content: 'Voor elke kart noteer je de status, eventuele problemen, onderhoud dat is uitgevoerd, en wie de kart heeft gebruikt.',
+                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Kart+Daily+3'
+            },
+            {
+                title: 'Tips',
+                content: '• Wees specifiek bij problemen\n• Noteer altijd de tijd van meldingen\n• Upload het bestand na invullen',
+                image: null
+            }
+        ]
+    },
+    'daily-report': {
+        title: 'Daily Report - Tutorial',
+        description: 'Leer hoe je het dagelijkse rapport invult en welke informatie belangrijk is om te vermelden.',
+        sections: [
+            {
+                title: 'Waarom invullen?',
+                content: 'Het daily report geeft een overzicht van de dagelijkse activiteiten, problemen en belangrijke gebeurtenissen. Dit helpt bij communicatie en planning.',
+                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Daily+Report+1'
+            },
+            {
+                title: 'Stap 1: Open het document',
+                content: 'Download het Word document en open het. Je kunt het ook online bewerken als je de juiste rechten hebt.',
+                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Daily+Report+2'
+            },
+            {
+                title: 'Stap 2: Vul de secties in',
+                content: 'Vul alle relevante secties in: bezoekersaantallen, incidenten, onderhoud, opmerkingen, en andere belangrijke informatie van de dag.',
+                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Daily+Report+3'
+            },
+            {
+                title: 'Tips',
+                content: '• Vul het rapport in aan het einde van de dag\n• Wees objectief en duidelijk\n• Vermeld alle belangrijke gebeurtenissen',
+                image: null
+            }
+        ]
+    },
+    'kuismachine-logs': {
+        title: 'Kuismachine Logs - Tutorial',
+        description: 'Ontdek hoe je de kuismachine logs correct invult en waarom dit belangrijk is voor onderhoud en planning.',
+        sections: [
+            {
+                title: 'Waarom invullen?',
+                content: 'De kuismachine logs helpen ons om bij te houden wanneer de pistes zijn gekuist, welke machines zijn gebruikt, en of ze correct zijn onderhouden. Dit is belangrijk voor kwaliteit en veiligheid.',
+                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Kuismachine+1'
+            },
+            {
+                title: 'Stap 1: Open de overlay',
+                content: 'Klik op "Ga naar tool" bij Kuismachine logs om de invoer overlay te openen.',
+                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Kuismachine+2'
+            },
+            {
+                title: 'Stap 2: Vul de gegevens in',
+                content: 'Geef aan welke machines je hebt gebruikt (kuismachine en/of stofzuiger), welke pistes je hebt gekuist (A en/of B), en of je de machines daarna hebt uitgekuist. Vul ook de start- en eindtijden in van de machine displays.',
+                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Kuismachine+3'
+            },
+            {
+                title: 'Stap 3: Reden indien niet uitgekuist',
+                content: 'Als je een machine niet hebt uitgekuist, is het verplicht om een reden op te geven. Dit helpt bij planning en communicatie.',
+                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Kuismachine+4'
+            },
+            {
+                title: 'Tips',
+                content: '• Vul de logs direct in na het kuisen\n• Controleer de machine displays voor de juiste tijden\n• Geef altijd een duidelijke reden als je niet kunt uitkuisen',
+                image: null
+            }
+        ]
+    },
+    'stockcheck-bk': {
+        title: 'StockcheckBK - Tutorial',
+        description: 'Leer hoe je de stockcheck tool gebruikt om de voorraad bij te houden en te controleren.',
+        sections: [
+            {
+                title: 'Waarom invullen?',
+                content: 'De stockcheck tool helpt ons om de voorraad van alle items bij te houden. Dit is belangrijk voor bestellingen, planning en het voorkomen van tekorten.',
+                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Stockcheck+1'
+            },
+            {
+                title: 'Stap 1: Open de tool',
+                content: 'Klik op de link om de StockcheckBK tool te openen in je browser.',
+                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Stockcheck+2'
+            },
+            {
+                title: 'Stap 2: Controleer de voorraad',
+                content: 'Loop door de verschillende categorieën en controleer de fysieke voorraad. Vergelijk dit met wat er in het systeem staat.',
+                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Stockcheck+3'
+            },
+            {
+                title: 'Stap 3: Update de aantallen',
+                content: 'Pas de aantallen aan waar nodig. Noteer eventuele opmerkingen bij items die aandacht nodig hebben.',
+                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Stockcheck+4'
+            },
+            {
+                title: 'Tips',
+                content: '• Controleer systematisch per categorie\n• Noteer items die bijna op zijn\n• Sla regelmatig op tijdens het invullen',
+                image: null
+            }
+        ]
+    },
+    'kart-weekly': {
+        title: 'Kart Weekly - Tutorial',
+        description: 'Ontdek hoe je de wekelijkse kart check uitvoert en het logboek invult.',
+        sections: [
+            {
+                title: 'Waarom invullen?',
+                content: 'De wekelijkse kart check zorgt ervoor dat alle karts grondig worden gecontroleerd en onderhouden. Dit is essentieel voor veiligheid en kwaliteit.',
+                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Kart+Weekly+1'
+            },
+            {
+                title: 'Stap 1: Open de tool',
+                content: 'Klik op "Ga naar tool" om de WeeklyKartCheck tool te openen. Dit is een interactieve checklist voor elke kart.',
+                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Kart+Weekly+2'
+            },
+            {
+                title: 'Stap 2: Doorloop de checklist',
+                content: 'Voor elke kart doorloop je de volledige checklist: remmen, banden, motor, veiligheid, etc. Vink alles af dat in orde is.',
+                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Kart+Weekly+3'
+            },
+            {
+                title: 'Stap 3: Noteer problemen',
+                content: 'Als je problemen vindt, noteer deze duidelijk in het systeem. Dit helpt bij het plannen van reparaties.',
+                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Kart+Weekly+4'
+            },
+            {
+                title: 'Stap 4: Vul het logboek in',
+                content: 'Na het voltooien van de check, klik op "Ga naar logboek" om de resultaten in het Google Sheets document te noteren.',
+                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Kart+Weekly+5'
+            },
+            {
+                title: 'Tips',
+                content: '• Neem de tijd voor een grondige check\n• Wees eerlijk over de status van elke kart\n• Plan tijd in voor eventuele reparaties',
+                image: null
+            }
+        ]
+    }
+};
+
+// Easter egg boodschappen
+const easterEggMessages = {
+    morning: [
+        { message: "Beire goe bezig makker! Goeiemorgend", author: "Ruben" },
+        { message: "Have a good day pookie", author: "Tilly" },
+        { message: "Denk aan mij, dan gaat de tijd wat sneller vooruit xx Tilly", author: "Tilly" },
+        { message: "ben je moe? drink nalu.. Of koffie.. Koffie works too..", author: "Rubinhio" },
+        { message: "Goeiemorgen champ! Je hebt dit!", author: "Ruben" },
+        { message: "Rise and shine! Time to conquer the day 🌟", author: "Tilly" }
+    ],
+    evening: [
+        { message: "Goe gedaan vandaag makker! Proud.", author: "Ruben" },
+        { message: "You're the reason the lights are on. (maar vergeet ze niet uit te zetten als je weggaat ;))", author: "Tilly" },
+        { message: "Goodnight, you did it once again!", author: "Rubinhio" },
+        { message: "Another day, another victory royale", author: "Ruben" },
+        { message: "Je hebt het weer gefikst! Respect 👏", author: "Tilly" },
+        { message: "Time to rest, you've earned it! 🎉", author: "Rubinhio" }
+    ]
+};
+
 // Dagplanning data
 const dayPlanning = {
     opening: [
@@ -332,10 +532,19 @@ async function createToolCard(tool) {
         actionsHTML = '<span class="tool-link-button disabled">Binnenkort beschikbaar</span>';
     }
 
+    // Check of er een tutorial beschikbaar is voor deze tool
+    const hasTutorial = tutorials[tool.id] !== undefined;
+    const tutorialButton = hasTutorial 
+        ? `<button class="tool-tutorial-btn" onclick="openTutorial('${tool.id}', event)" title="Tutorial bekijken">?</button>`
+        : '';
+
     card.innerHTML = `
         <div class="tool-header">
             <div class="tool-title">${escapeHtml(tool.title)}</div>
-            ${frequencyBadge}
+            <div class="tool-header-right">
+                ${frequencyBadge}
+                ${tutorialButton}
+            </div>
         </div>
         ${timeAgoText ? `<div class="time-ago-tag">${escapeHtml(timeAgoText)}</div>` : ''}
         <div class="tool-info">
@@ -1373,6 +1582,185 @@ function renderPlanningTask(task, isCompleted, lastClickData = null) {
 }
 
 /**
+ * Check of alle taken in een sectie voltooid zijn
+ */
+async function areAllTasksCompleted(section) {
+    if (!currentUserName) {
+        return false;
+    }
+    
+    const now = new Date();
+    const dateString = now.toISOString().split('T')[0];
+    const status = await getDayPlanningStatus(dateString, currentUserName);
+    
+    const tasks = dayPlanning[section];
+    if (tasks.length === 0) {
+        return false;
+    }
+    
+    // Check of alle taken voltooid zijn
+    return tasks.every(task => status[task.id]?.completed === true);
+}
+
+/**
+ * Toon easter egg boodschap (20% kans)
+ */
+function showEasterEggMessage(section) {
+    // 20% kans
+    if (Math.random() > 0.2) {
+        return;
+    }
+    
+    const messages = easterEggMessages[section];
+    if (!messages || messages.length === 0) {
+        return;
+    }
+    
+    // Kies willekeurige boodschap
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+    
+    // Toon modal
+    showEasterEggModal(randomMessage.message, randomMessage.author);
+}
+
+/**
+ * Toon easter egg modal
+ */
+function showEasterEggModal(message, author) {
+    // Maak modal element als het nog niet bestaat
+    let modal = document.getElementById('easter-egg-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'easter-egg-modal';
+        modal.className = 'easter-egg-modal';
+        modal.innerHTML = `
+            <div class="easter-egg-backdrop" onclick="closeEasterEggModal()"></div>
+            <div class="easter-egg-content">
+                <div class="easter-egg-icon">🎉</div>
+                <div class="easter-egg-message"></div>
+                <div class="easter-egg-author"></div>
+                <button class="easter-egg-close" onclick="closeEasterEggModal()">Sluiten</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    // Vul boodschap in
+    const messageEl = modal.querySelector('.easter-egg-message');
+    const authorEl = modal.querySelector('.easter-egg-author');
+    
+    if (messageEl) {
+        messageEl.textContent = message;
+    }
+    if (authorEl) {
+        authorEl.textContent = `- ${author}`;
+    }
+    
+    // Toon modal
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Sluit easter egg modal
+ */
+function closeEasterEggModal() {
+    const modal = document.getElementById('easter-egg-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+/**
+ * Open tutorial overlay
+ */
+function openTutorial(toolId, event) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+    
+    const tutorial = tutorials[toolId];
+    if (!tutorial) {
+        return;
+    }
+    
+    // Maak of update tutorial modal
+    let modal = document.getElementById('tutorial-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'tutorial-modal';
+        modal.className = 'tutorial-modal';
+        modal.innerHTML = `
+            <div class="tutorial-backdrop" onclick="closeTutorial()"></div>
+            <div class="tutorial-content">
+                <div class="tutorial-header">
+                    <h2 class="tutorial-title"></h2>
+                    <button class="tutorial-close" onclick="closeTutorial()">&times;</button>
+                </div>
+                <div class="tutorial-description"></div>
+                <div class="tutorial-sections"></div>
+                <div class="tutorial-footer">
+                    <button class="btn-primary" onclick="closeTutorial()">Sluiten</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    // Vul tutorial content in
+    const titleEl = modal.querySelector('.tutorial-title');
+    const descEl = modal.querySelector('.tutorial-description');
+    const sectionsEl = modal.querySelector('.tutorial-sections');
+    
+    if (titleEl) {
+        titleEl.textContent = tutorial.title;
+    }
+    if (descEl) {
+        descEl.textContent = tutorial.description;
+    }
+    if (sectionsEl) {
+        sectionsEl.innerHTML = tutorial.sections.map((section, index) => {
+            let sectionHTML = `
+                <div class="tutorial-section">
+                    <h3 class="tutorial-section-title">${escapeHtml(section.title)}</h3>
+                    <div class="tutorial-section-content">
+                        ${section.image ? `
+                            <div class="tutorial-image-container">
+                                <img src="${escapeHtml(section.image)}" alt="${escapeHtml(section.title)}" class="tutorial-image" onerror="this.style.display='none'">
+                            </div>
+                        ` : ''}
+                        <div class="tutorial-text">
+                            ${escapeHtml(section.content).replace(/\n/g, '<br>')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            return sectionHTML;
+        }).join('');
+    }
+    
+    // Toon modal
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    
+    // Scroll naar boven
+    modal.querySelector('.tutorial-content').scrollTop = 0;
+}
+
+/**
+ * Sluit tutorial overlay
+ */
+function closeTutorial() {
+    const modal = document.getElementById('tutorial-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+/**
  * Toggle voltooid status van een planning taak
  */
 async function toggleCompletedTask(taskId, event) {
@@ -1397,6 +1785,26 @@ async function toggleCompletedTask(taskId, event) {
             taskElement.classList.add('completed');
         } else {
             taskElement.classList.remove('completed');
+        }
+    }
+    
+    // Check of alle taken voltooid zijn en toon easter egg (alleen als taak wordt afgevinkt)
+    if (completed) {
+        // Bepaal in welke sectie deze taak zit
+        let section = null;
+        if (dayPlanning.opening.find(t => t.id === taskId)) {
+            section = 'morning';
+        } else if (dayPlanning.closing.find(t => t.id === taskId)) {
+            section = 'evening';
+        }
+        
+        if (section) {
+            // Check of alle taken in deze sectie voltooid zijn
+            const allCompleted = await areAllTasksCompleted(section === 'morning' ? 'opening' : 'closing');
+            if (allCompleted) {
+                // 20% kans op easter egg
+                showEasterEggMessage(section);
+            }
         }
     }
 }
