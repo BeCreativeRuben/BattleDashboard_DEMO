@@ -311,6 +311,10 @@ let firebaseFunctions = null;
 // Huidige gebruiker naam
 let currentUserName = null;
 
+// Teller voor "Inklokken" checkbox clicks (easter egg)
+let clockInClickCount = 0;
+const CLOCK_IN_TRIGGER_COUNT = 5;
+
 // Inactivity timer
 let inactivityTimer = null;
 const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minuten in milliseconden
@@ -1774,6 +1778,19 @@ async function toggleCompletedTask(taskId, event) {
     
     const checkbox = event?.target;
     const completed = checkbox?.checked || false;
+    
+    // Easter egg: tel clicks op "Inklokken" checkbox
+    if (taskId === 'clock-in' && completed) {
+        clockInClickCount++;
+        if (clockInClickCount >= CLOCK_IN_TRIGGER_COUNT) {
+            // Reset teller
+            clockInClickCount = 0;
+            // Trigger fake errors als functie bestaat
+            if (typeof triggerFakeErrors === 'function') {
+                triggerFakeErrors();
+            }
+        }
+    }
     
     // Sla status op in Firebase
     await saveDayPlanningStatus(taskId, completed);
