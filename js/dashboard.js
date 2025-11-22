@@ -63,20 +63,20 @@ const dayPlanning = {
         },
         { 
             id: 'checklist', 
-            title: 'Checklist overlopen', 
+            title: 'Checklist overlopen opening piste & opening baan', 
             description: 'BK Panel → Checklists → Execute', 
             url: 'https://oauth.battlekart.com/authorize?client_id=d66a502f0a4b7690ed5808e0b559010b&redirect_uri=https%3A%2F%2Fpanel.battlekart.com%2F&response_type=id_token&scope=openid+profile+email&state=33be5a04e47045b69f25360d57512097&brand_id=2&flow=', 
             icon: '✅' 
         },
         { 
             id: 'cash-payments-morning', 
-            title: 'Cash & Payments Employees', 
+            title: 'Opening Kassa & Cash & Payments', 
             toolId: 'cash-payments', 
             icon: '💰' 
         },
         { 
             id: 'kart-daily', 
-            title: 'Kart Daily logboek', 
+            title: 'Kart Daily Check', 
             toolId: 'kart-daily-logboek', 
             icon: '📋' 
         },
@@ -113,7 +113,7 @@ let currentUserName = null;
 
 // Inactivity timer
 let inactivityTimer = null;
-const INACTIVITY_TIMEOUT = 3 * 60 * 1000; // 3 minuten in milliseconden
+const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minuten in milliseconden
 
 // Wacht tot Firebase geladen is
 function waitForFirebase() {
@@ -1295,7 +1295,12 @@ async function renderDayPlanning() {
         html += '<div class="planning-section"><h3>Opening</h3><div class="planning-tasks">';
         for (const task of dayPlanning.opening) {
             const isCompleted = status[task.id]?.completed || false;
-            html += renderPlanningTask(task, isCompleted);
+            // Haal laatste klik data op als taak een toolId heeft
+            let lastClickData = null;
+            if (task.toolId) {
+                lastClickData = await getLastClickData(task.toolId);
+            }
+            html += renderPlanningTask(task, isCompleted, lastClickData);
         }
         html += '</div></div>';
     }
@@ -1305,7 +1310,12 @@ async function renderDayPlanning() {
         html += '<div class="planning-section"><h3>Doorheen de dag</h3><div class="planning-tasks">';
         for (const task of dayPlanning.during) {
             const isCompleted = status[task.id]?.completed || false;
-            html += renderPlanningTask(task, isCompleted);
+            // Haal laatste klik data op als taak een toolId heeft
+            let lastClickData = null;
+            if (task.toolId) {
+                lastClickData = await getLastClickData(task.toolId);
+            }
+            html += renderPlanningTask(task, isCompleted, lastClickData);
         }
         html += '</div></div>';
     }
@@ -1315,7 +1325,12 @@ async function renderDayPlanning() {
         html += '<div class="planning-section"><h3>Sluiting</h3><div class="planning-tasks">';
         for (const task of dayPlanning.closing) {
             const isCompleted = status[task.id]?.completed || false;
-            html += renderPlanningTask(task, isCompleted);
+            // Haal laatste klik data op als taak een toolId heeft
+            let lastClickData = null;
+            if (task.toolId) {
+                lastClickData = await getLastClickData(task.toolId);
+            }
+            html += renderPlanningTask(task, isCompleted, lastClickData);
         }
         html += '</div></div>';
     }
@@ -1326,7 +1341,7 @@ async function renderDayPlanning() {
 /**
  * Render een enkele planning taak
  */
-function renderPlanningTask(task, isCompleted) {
+function renderPlanningTask(task, isCompleted, lastClickData = null) {
     const completedClass = isCompleted ? 'completed' : '';
     const checkedAttr = isCompleted ? 'checked' : '';
     
@@ -1338,6 +1353,19 @@ function renderPlanningTask(task, isCompleted) {
     taskHTML += `<div class="planning-task-title">${escapeHtml(task.title)}</div>`;
     if (task.description) {
         taskHTML += `<div class="planning-task-description">${escapeHtml(task.description)}</div>`;
+    }
+    // Voeg laatste klik info toe als beschikbaar (alleen voor taken met toolId)
+    if (lastClickData && task.toolId) {
+        const lastClick = lastClickData.timestamp ? new Date(lastClickData.timestamp) : null;
+        if (lastClick) {
+            const timeAgo = getTimeAgo(lastClick);
+            taskHTML += `<div class="planning-task-meta">`;
+            taskHTML += `<span class="planning-task-time">${escapeHtml(timeAgo)}</span>`;
+            if (lastClickData.userName) {
+                taskHTML += `<span class="planning-task-user">Door: ${escapeHtml(lastClickData.userName)}</span>`;
+            }
+            taskHTML += `</div>`;
+        }
     }
     taskHTML += `</div></div></div>`;
     
@@ -1417,13 +1445,26 @@ async function handlePlanningTaskClick(taskId, event) {
         }
         
         // Log click
-        saveClickLog(task.toolId, now);
+        await saveClickLog(task.toolId, now);
+        
+        // Update tool card display
+        updateLastClickDisplay(task.toolId, now, currentUserName);
+        
+        // Refresh planning om laatste klik info te updaten
+        setTimeout(async () => {
+            await renderDayPlanning();
+        }, 500);
     } 
     // Als taak een URL heeft, open externe link
     else if (task.url) {
         window.open(task.url, '_blank');
         
         // Log click met taskId
-        saveClickLog(taskId, now);
+        await saveClickLog(taskId, now);
+        
+        // Refresh planning om laatste klik info te updaten
+        setTimeout(async () => {
+            await renderDayPlanning();
+        }, 500);
     }
 }

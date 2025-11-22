@@ -184,6 +184,22 @@ header h1 {
     font-style: italic;
 }
 
+.planning-task-meta {
+    display: flex;
+    gap: 12px;
+    margin-top: 6px;
+    font-size: 0.75rem;
+    color: #999;
+}
+
+.planning-task-time {
+    color: #667eea;
+}
+
+.planning-task-user {
+    color: #999;
+}
+
 .dashboard {
     animation: fadeIn 0.5s ease-in;
 }
