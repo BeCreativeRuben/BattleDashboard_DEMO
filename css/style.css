@@ -34,6 +34,47 @@ header h1 {
     opacity: 0.9;
 }
 
+.quick-links {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.quick-link-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    min-width: 80px;
+}
+
+.quick-link-item:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.quick-link-icon {
+    font-size: 1.8rem;
+    margin-bottom: 6px;
+    line-height: 1;
+}
+
+.quick-link-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-align: center;
+    opacity: 0.95;
+}
+
 .dashboard {
     animation: fadeIn 0.5s ease-in;
 }

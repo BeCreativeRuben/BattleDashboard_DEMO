@@ -152,6 +152,30 @@
                 <button onclick="changeUserName()" class="btn-change-name">Wijzig naam</button>
             </div>
         </header>
+        
+        <div class="quick-links">
+            <a href="https://oauth.battlekart.com/authorize?client_id=d66a502f0a4b7690ed5808e0b559010b&redirect_uri=https%3A%2F%2Fpanel.battlekart.com%2F&response_type=id_token&scope=openid+profile+email&state=33be5a04e47045b69f25360d57512097&brand_id=2&flow=" 
+               target="_blank" 
+               class="quick-link-item"
+               onclick="handleQuickLinkClick('bk-panel')">
+                <div class="quick-link-icon">⚙️</div>
+                <div class="quick-link-label">BK Panel</div>
+            </a>
+            <a href="https://outlook.com" 
+               target="_blank" 
+               class="quick-link-item"
+               onclick="handleQuickLinkClick('outlook')">
+                <div class="quick-link-icon">📧</div>
+                <div class="quick-link-label">Outlook</div>
+            </a>
+            <a href="https://battlekart.com" 
+               target="_blank" 
+               class="quick-link-item"
+               onclick="handleQuickLinkClick('bk-website')">
+                <div class="quick-link-icon">🌐</div>
+                <div class="quick-link-label">BK Website</div>
+            </a>
+        </div>
 
         <main id="dashboard" class="dashboard">
             <div id="tools-container" class="tools-container">

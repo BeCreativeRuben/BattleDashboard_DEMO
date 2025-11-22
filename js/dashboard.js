@@ -461,6 +461,21 @@ function setupActivityListeners() {
 }
 
 /**
+ * Handle quick link click - log de klik tijd
+ */
+function handleQuickLinkClick(linkId) {
+    // Check of er een gebruikersnaam is
+    if (!currentUserName) {
+        showNameModal();
+        return;
+    }
+    
+    // Log de klik tijd
+    const now = new Date();
+    saveClickLog(linkId, now);
+}
+
+/**
  * Handle link click - log de klik tijd
  */
 function handleLinkClick(toolId, event) {
