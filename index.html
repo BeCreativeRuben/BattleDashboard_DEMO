@@ -152,8 +152,16 @@
                 <button class="overlay-close" onclick="closeKartDailyOverlay()">&times;</button>
             </div>
             <form id="kart-daily-form" onsubmit="handleKartDailySubmit(event)">
+                <div class="kart-general-comments-section">
+                    <div class="form-group">
+                        <label for="kart-general-comments">Algemene opmerkingen (optioneel)</label>
+                        <textarea id="kart-general-comments" name="generalComments" rows="3" placeholder="Algemene opmerkingen over de daily check..."></textarea>
+                    </div>
+                </div>
+                
                 <div class="kart-list-container">
-                    <div class="kart-list" id="kart-list">
+                    <h3 style="margin-bottom: 16px; color: #333;">Selecteer karts met problemen:</h3>
+                    <div class="kart-grid" id="kart-list">
                         <!-- Kart items worden hier dynamisch gegenereerd door JavaScript -->
                     </div>
                 </div>

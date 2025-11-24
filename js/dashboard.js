@@ -1451,27 +1451,31 @@ async function openKartDailyOverlay(event) {
     errorDiv.style.display = 'none';
     errorDiv.textContent = '';
     
-    // Genereer kart items (1-36)
+    // Genereer kart items (1-36) als blokjes
     kartList.innerHTML = '';
     for (let i = 1; i <= 36; i++) {
         const kartItem = document.createElement('div');
-        kartItem.className = 'kart-item';
+        kartItem.className = 'kart-block';
+        kartItem.setAttribute('data-kart-number', i);
         kartItem.innerHTML = `
-            <div class="kart-item-header">
-                <label class="kart-problem-checkbox">
-                    <input type="checkbox" id="kart-${i}-problem" name="kart-${i}-problem" onchange="toggleKartProblem(${i})">
-                    <span>Kart ${i} - Probleem met deze kart</span>
-                </label>
+            <div class="kart-block-number" onclick="toggleKartDetails(${i})">
+                <span class="kart-number">${i}</span>
+                <input type="checkbox" id="kart-${i}-problem" name="kart-${i}-problem" class="kart-problem-checkbox-input" onchange="toggleKartProblem(${i})">
             </div>
-            <div id="kart-${i}-reason-field" class="kart-reason-field" style="display: none;">
-                <div class="form-group">
-                    <label for="kart-${i}-reason">Reden <span class="required">*</span></label>
-                    <input type="text" id="kart-${i}-reason" name="kart-${i}-reason" placeholder="Beschrijf het probleem...">
+            <div id="kart-${i}-details" class="kart-details" style="display: none;">
+                <div class="kart-details-header">
+                    <h4>Kart ${i} - Probleem rapporteren</h4>
                 </div>
-            </div>
-            <div class="form-group">
-                <label for="kart-${i}-comments">Opmerkingen (optioneel)</label>
-                <textarea id="kart-${i}-comments" name="kart-${i}-comments" rows="2" placeholder="Extra opmerkingen..."></textarea>
+                <div id="kart-${i}-reason-field" class="kart-reason-field">
+                    <div class="form-group">
+                        <label for="kart-${i}-reason">Reden <span class="required">*</span></label>
+                        <input type="text" id="kart-${i}-reason" name="kart-${i}-reason" placeholder="Beschrijf het probleem...">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="kart-${i}-comments">Opmerkingen (optioneel)</label>
+                    <textarea id="kart-${i}-comments" name="kart-${i}-comments" rows="2" placeholder="Extra opmerkingen..."></textarea>
+                </div>
             </div>
         `;
         kartList.appendChild(kartItem);
@@ -1488,11 +1492,25 @@ async function openKartDailyOverlay(event) {
             const reasonInput = document.getElementById(`kart-${kartNum}-reason`);
             const commentsInput = document.getElementById(`kart-${kartNum}-comments`);
             
+            const detailsDiv = document.getElementById(`kart-${kartNum}-details`);
+            const kartBlock = document.querySelector(`.kart-block[data-kart-number="${kartNum}"]`);
+            
             if (kart.hasProblem) {
-                problemCheckbox.checked = true;
-                reasonField.style.display = 'block';
+                if (problemCheckbox) {
+                    problemCheckbox.checked = true;
+                }
+                if (detailsDiv) {
+                    detailsDiv.style.display = 'block';
+                }
+                if (kartBlock) {
+                    kartBlock.classList.add('kart-block-active', 'kart-block-has-problem');
+                }
+                if (reasonField) {
+                    reasonField.style.display = 'block';
+                }
                 if (reasonInput) {
                     reasonInput.value = kart.reason || '';
+                    reasonInput.required = true;
                 }
             }
             if (commentsInput && kart.comments) {
@@ -1503,6 +1521,11 @@ async function openKartDailyOverlay(event) {
         // Vul kuisen checkbox
         if (lastCheck.allKartsCleaned !== undefined) {
             document.getElementById('all-karts-cleaned').checked = lastCheck.allKartsCleaned;
+        }
+        
+        // Vul algemene comments
+        if (lastCheck.generalComments && document.getElementById('kart-general-comments')) {
+            document.getElementById('kart-general-comments').value = lastCheck.generalComments;
         }
     }
     
@@ -1521,23 +1544,60 @@ function closeKartDailyOverlay() {
 }
 
 /**
+ * Toggle kart details venster (bij klik op kart blokje)
+ */
+function toggleKartDetails(kartNumber) {
+    const detailsDiv = document.getElementById(`kart-${kartNumber}-details`);
+    const kartBlock = document.querySelector(`.kart-block[data-kart-number="${kartNumber}"]`);
+    
+    if (detailsDiv.style.display === 'none' || !detailsDiv.style.display) {
+        detailsDiv.style.display = 'block';
+        if (kartBlock) {
+            kartBlock.classList.add('kart-block-active');
+        }
+    } else {
+        detailsDiv.style.display = 'none';
+        if (kartBlock) {
+            kartBlock.classList.remove('kart-block-active');
+        }
+    }
+}
+
+/**
  * Toggle kart probleem reden veld
  */
 function toggleKartProblem(kartNumber) {
     const checkbox = document.getElementById(`kart-${kartNumber}-problem`);
     const reasonField = document.getElementById(`kart-${kartNumber}-reason-field`);
     const reasonInput = document.getElementById(`kart-${kartNumber}-reason`);
+    const detailsDiv = document.getElementById(`kart-${kartNumber}-details`);
+    const kartBlock = document.querySelector(`.kart-block[data-kart-number="${kartNumber}"]`);
     
+    // Als checkbox wordt aangevinkt, open details en maak reden verplicht
     if (checkbox.checked) {
-        reasonField.style.display = 'block';
+        if (detailsDiv) {
+            detailsDiv.style.display = 'block';
+        }
+        if (kartBlock) {
+            kartBlock.classList.add('kart-block-active', 'kart-block-has-problem');
+        }
+        if (reasonField) {
+            reasonField.style.display = 'block';
+        }
         if (reasonInput) {
             reasonInput.required = true;
         }
     } else {
-        reasonField.style.display = 'none';
+        // Als checkbox wordt uitgevinkt, maak reden niet verplicht maar laat details open
+        if (reasonField) {
+            reasonField.style.display = 'block';
+        }
         if (reasonInput) {
             reasonInput.required = false;
             reasonInput.value = '';
+        }
+        if (kartBlock) {
+            kartBlock.classList.remove('kart-block-has-problem');
         }
     }
 }
@@ -1597,6 +1657,7 @@ async function handleKartDailySubmit(event) {
     }
     
     const allKartsCleaned = document.getElementById('all-karts-cleaned').checked;
+    const generalComments = document.getElementById('kart-general-comments') ? document.getElementById('kart-general-comments').value.trim() : '';
     
     const checkData = {
         userName: currentUserName,
@@ -1604,6 +1665,7 @@ async function handleKartDailySubmit(event) {
         dateTime: formatDateTime(new Date()),
         karts: karts,
         allKartsCleaned: allKartsCleaned,
+        generalComments: generalComments,
         checkCompleted: true
     };
     

@@ -931,6 +931,77 @@ header h1 {
     padding-right: 8px;
 }
 
+.kart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 12px;
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.kart-block {
+    position: relative;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.kart-block:hover {
+    border-color: #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+    transform: translateY(-2px);
+}
+
+.kart-block-active {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.kart-block-has-problem {
+    border-color: #dc3545;
+    background: #fff5f5;
+}
+
+.kart-block-number {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    min-height: 60px;
+}
+
+.kart-number {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    flex: 1;
+    text-align: center;
+}
+
+.kart-problem-checkbox-input {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #dc3545;
+    flex-shrink: 0;
+}
+
+.kart-details {
+    padding: 16px;
+    border-top: 2px solid #e0e0e0;
+    background: #f8f9fa;
+    border-radius: 0 0 8px 8px;
+}
+
+.kart-details-header h4 {
+    margin: 0 0 16px 0;
+    color: #333;
+    font-size: 1rem;
+}
+
 .kart-item {
     background: #f8f9fa;
     border: 1px solid #e0e0e0;
@@ -1018,6 +1089,36 @@ header h1 {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+.kart-general-comments-section {
+    margin-bottom: 24px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.kart-general-comments-section .form-group {
+    margin-bottom: 0;
+}
+
+.kart-general-comments-section textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+
+.kart-general-comments-section textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
 .kart-cleaning-section {
     margin-top: 24px;
     padding-top: 24px;
@@ -1037,22 +1138,26 @@ header h1 {
     color: #333;
 }
 
-/* Scrollbar styling voor kart list */
-.kart-list::-webkit-scrollbar {
+/* Scrollbar styling voor kart list en grid */
+.kart-list::-webkit-scrollbar,
+.kart-grid::-webkit-scrollbar {
     width: 8px;
 }
 
-.kart-list::-webkit-scrollbar-track {
+.kart-list::-webkit-scrollbar-track,
+.kart-grid::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 4px;
 }
 
-.kart-list::-webkit-scrollbar-thumb {
+.kart-list::-webkit-scrollbar-thumb,
+.kart-grid::-webkit-scrollbar-thumb {
     background: #888;
     border-radius: 4px;
 }
 
-.kart-list::-webkit-scrollbar-thumb:hover {
+.kart-list::-webkit-scrollbar-thumb:hover,
+.kart-grid::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
 
