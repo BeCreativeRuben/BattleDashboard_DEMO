@@ -1043,6 +1043,41 @@ async function setupFirebaseListeners() {
             console.error('Error in kuismachine logs listener:', error);
         });
         
+        // Luister naar kart daily checks voor real-time updates
+        const kartDailyChecksRef = ref(database, 'logs/kart-daily-checks');
+        onValue(kartDailyChecksRef, async (snapshot) => {
+            // Update kart daily tool card wanneer checks veranderen (ook als er geen checks zijn)
+            const toolCard = document.querySelector('.tool-card[data-tool-id="kart-daily-logboek"]');
+            if (toolCard) {
+                // Herlaad alleen de kart daily tool card
+                const kartDailyTool = tools.find(t => t.id === 'kart-daily-logboek');
+                if (kartDailyTool) {
+                    const newCard = await createToolCard(kartDailyTool);
+                    toolCard.replaceWith(newCard);
+                }
+            }
+        }, (error) => {
+            console.error('Error in kart daily checks listener:', error);
+        });
+        
+        // Luister ook naar clicks voor kart-daily-logboek voor real-time updates
+        const kartDailyClickRef = ref(database, 'clicks/kart-daily-logboek');
+        onValue(kartDailyClickRef, async (snapshot) => {
+            if (snapshot.exists()) {
+                // Update kart daily tool card wanneer click data verandert
+                const toolCard = document.querySelector('.tool-card[data-tool-id="kart-daily-logboek"]');
+                if (toolCard) {
+                    const kartDailyTool = tools.find(t => t.id === 'kart-daily-logboek');
+                    if (kartDailyTool) {
+                        const newCard = await createToolCard(kartDailyTool);
+                        toolCard.replaceWith(newCard);
+                    }
+                }
+            }
+        }, (error) => {
+            console.error('Error in kart daily click listener:', error);
+        });
+        
         console.log('Firebase real-time listeners actief');
         console.log('Alle click logs zijn beschikbaar in Firebase onder: logs/{toolId}/');
     } catch (error) {
@@ -1816,21 +1851,28 @@ async function renderKartDailyStatus() {
         return null;
     }
     
-    // Tel aantal karts met problemen
+    // Tel aantal karts met problemen - expliciet controleren op boolean true
     let problemCount = 0;
     if (lastCheck.karts) {
         Object.keys(lastCheck.karts).forEach(kartNum => {
-            if (lastCheck.karts[kartNum].hasProblem) {
+            const kart = lastCheck.karts[kartNum];
+            // Normaliseer boolean waarde (Firebase kan ze soms als strings opslaan)
+            const hasProblem = kart.hasProblem === true || kart.hasProblem === 'true' || kart.hasProblem === 1 || kart.hasProblem === '1';
+            if (hasProblem) {
                 problemCount++;
             }
         });
     }
     
+    // Normaliseer allKartsCleaned boolean
+    const allKartsCleaned = lastCheck.allKartsCleaned === true || lastCheck.allKartsCleaned === 'true' || lastCheck.allKartsCleaned === 1 || lastCheck.allKartsCleaned === '1';
+    const checkCompleted = lastCheck.checkCompleted === true || lastCheck.checkCompleted === 'true' || lastCheck.checkCompleted === 1 || lastCheck.checkCompleted === '1';
+    
     return {
         lastCheck: lastCheck,
         problemCount: problemCount,
-        allKartsCleaned: lastCheck.allKartsCleaned || false,
-        checkCompleted: lastCheck.checkCompleted || false
+        allKartsCleaned: allKartsCleaned,
+        checkCompleted: checkCompleted
     };
 }
 
