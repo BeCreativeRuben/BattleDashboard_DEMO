@@ -914,6 +914,148 @@ header h1 {
     overflow-y: auto;
 }
 
+/* Kart Daily overlay specifieke styles */
+.kart-daily-modal-content {
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.kart-list-container {
+    margin-bottom: 24px;
+}
+
+.kart-list {
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.kart-item {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: all 0.2s ease;
+}
+
+.kart-item:hover {
+    background: #f0f0f0;
+    border-color: #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+}
+
+.kart-item-header {
+    margin-bottom: 12px;
+}
+
+.kart-problem-checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 500;
+    color: #333;
+}
+
+.kart-problem-checkbox input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    cursor: pointer;
+    accent-color: #dc3545;
+    flex-shrink: 0;
+}
+
+.kart-reason-field {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.kart-reason-field .form-group {
+    margin-bottom: 0;
+}
+
+.kart-reason-field input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+}
+
+.kart-reason-field input[type="text"]:focus {
+    outline: none;
+    border-color: #dc3545;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.kart-item .form-group {
+    margin-bottom: 12px;
+}
+
+.kart-item .form-group:last-child {
+    margin-bottom: 0;
+}
+
+.kart-item textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    resize: vertical;
+    min-height: 60px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+
+.kart-item textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.kart-cleaning-section {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 2px solid #e0e0e0;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.kart-cleaning-section .checkbox-group {
+    margin: 0;
+}
+
+.kart-cleaning-section label {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #333;
+}
+
+/* Scrollbar styling voor kart list */
+.kart-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.kart-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.kart-list::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.kart-list::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
 .name-modal-header {
     display: flex;
     justify-content: space-between;

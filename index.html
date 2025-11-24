@@ -143,6 +143,40 @@
         </div>
     </div>
 
+    <!-- Daily Kart Check overlay -->
+    <div id="kart-daily-overlay" class="name-modal" style="display: none;">
+        <div class="name-modal-backdrop" onclick="closeKartDailyOverlay()"></div>
+        <div class="name-modal-content kart-daily-modal-content">
+            <div class="name-modal-header">
+                <h2>Daily Kart Check</h2>
+                <button class="overlay-close" onclick="closeKartDailyOverlay()">&times;</button>
+            </div>
+            <form id="kart-daily-form" onsubmit="handleKartDailySubmit(event)">
+                <div class="kart-list-container">
+                    <div class="kart-list" id="kart-list">
+                        <!-- Kart items worden hier dynamisch gegenereerd door JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="kart-cleaning-section">
+                    <div class="form-group checkbox-group">
+                        <label>
+                            <input type="checkbox" id="all-karts-cleaned" name="allKartsCleaned">
+                            Zijn alle karts ook gekuist? (sturen gekuist & ipad & zitje)
+                        </label>
+                    </div>
+                </div>
+
+                <div id="kart-daily-form-error" class="form-error" style="display: none;"></div>
+
+                <div class="name-modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeKartDailyOverlay()">Annuleren</button>
+                    <button type="submit" class="btn-primary">Opslaan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="container" id="main-container" style="display: none;">
         <header>
             <h1>Battlekart Dashboard</h1>

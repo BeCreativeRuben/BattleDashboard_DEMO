@@ -16,7 +16,7 @@ const tools = [
     {
         id: 'daily-report',
         title: 'Daily Report',
-        url: 'https://battlekartbelgium-my.sharepoint.com/:w:/g/personal/info_gent_battlekart_com/IQAFUG29K3cPRqUOHIo-eiC3AedKaIhOp3YJX1ZYJD92NcM?e=Kewg1s',
+        url: 'https://battlekartbelgium-my.sharepoint.com/:w:/g/personal/info_gent_battlekart_com/IQAFUG29K3cPRqUOHIo-eiC3AcGFK6Q8GalIm9Mwv8I52rM?e=RK7Ypo',
         frequency: 'daily'
     },
     {
@@ -430,6 +430,46 @@ async function createToolCard(tool) {
 
     // Speciale behandeling voor kuismachine-logs
     let kuismachineInfoHTML = '';
+    let kartDailyInfoHTML = '';
+    
+    // Speciale behandeling voor kart-daily-logboek
+    if (tool.id === 'kart-daily-logboek') {
+        const status = await renderKartDailyStatus();
+        if (status && status.lastCheck) {
+            const logDate = new Date(status.lastCheck.timestamp);
+            const dateTimeStr = formatDateTime(logDate);
+            const userName = status.lastCheck.userName || 'Onbekend';
+            const problemCount = status.problemCount;
+            const allKartsCleaned = status.allKartsCleaned;
+            
+            kartDailyInfoHTML = `
+                <div class="info-item">
+                    <span class="info-label">Laatst gecheckt:</span>
+                    <span class="info-value">${escapeHtml(dateTimeStr)}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Karts met problemen:</span>
+                    <span class="info-value">${problemCount > 0 ? `<span style="color: #dc3545; font-weight: 600;">${problemCount}</span>` : '<span style="color: #28a745;">0</span>'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Alle karts gekuist:</span>
+                    <span class="info-value">${allKartsCleaned ? '<span class="checkmark-yes">✓ Ja</span>' : '<span class="checkmark-no">✗ Nee</span>'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Door:</span>
+                    <span class="info-value info-value-user">${escapeHtml(userName)}</span>
+                </div>
+            `;
+        } else {
+            kartDailyInfoHTML = `
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value empty">Nog niet gecheckt vandaag</span>
+                </div>
+            `;
+        }
+    }
+    
     if (tool.id === 'kuismachine-logs') {
         const lastLog = await getLastKuismachineLog();
         if (lastLog) {
@@ -506,6 +546,13 @@ async function createToolCard(tool) {
                 → Ga naar tool
             </button>
         `;
+    } else if (tool.id === 'kart-daily-logboek') {
+        // Speciale button voor kart daily overlay
+        actionsHTML = `
+            <button class="tool-link-button" onclick="openKartDailyOverlay(event)">
+                → Start Daily Check
+            </button>
+        `;
     } else if (tool.hasMultipleLinks && tool.logboekUrl) {
         actionsHTML = `
             <a href="${escapeHtml(tool.url)}" 
@@ -550,7 +597,8 @@ async function createToolCard(tool) {
         </div>
         ${timeAgoText ? `<div class="time-ago-tag">${escapeHtml(timeAgoText)}</div>` : ''}
         <div class="tool-info">
-            ${tool.id === 'kuismachine-logs' ? kuismachineInfoHTML : `
+            ${tool.id === 'kuismachine-logs' ? kuismachineInfoHTML : 
+              tool.id === 'kart-daily-logboek' ? kartDailyInfoHTML : `
             <div class="info-item">
                 <span class="info-label">Laatst geklikt:</span>
                 <span class="info-value ${!lastClick ? 'empty' : ''}">${escapeHtml(lastClickText)}</span>
@@ -1381,6 +1429,308 @@ async function getLastKuismachineLog() {
 }
 
 /**
+ * Open kart daily overlay
+ */
+async function openKartDailyOverlay(event) {
+    if (event) {
+        event.preventDefault();
+    }
+    
+    if (!currentUserName) {
+        showNameModal();
+        return;
+    }
+    
+    const overlay = document.getElementById('kart-daily-overlay');
+    const form = document.getElementById('kart-daily-form');
+    const errorDiv = document.getElementById('kart-daily-form-error');
+    const kartList = document.getElementById('kart-list');
+    
+    // Reset formulier
+    form.reset();
+    errorDiv.style.display = 'none';
+    errorDiv.textContent = '';
+    
+    // Genereer kart items (1-36)
+    kartList.innerHTML = '';
+    for (let i = 1; i <= 36; i++) {
+        const kartItem = document.createElement('div');
+        kartItem.className = 'kart-item';
+        kartItem.innerHTML = `
+            <div class="kart-item-header">
+                <label class="kart-problem-checkbox">
+                    <input type="checkbox" id="kart-${i}-problem" name="kart-${i}-problem" onchange="toggleKartProblem(${i})">
+                    <span>Kart ${i} - Probleem met deze kart</span>
+                </label>
+            </div>
+            <div id="kart-${i}-reason-field" class="kart-reason-field" style="display: none;">
+                <div class="form-group">
+                    <label for="kart-${i}-reason">Reden <span class="required">*</span></label>
+                    <input type="text" id="kart-${i}-reason" name="kart-${i}-reason" placeholder="Beschrijf het probleem...">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="kart-${i}-comments">Opmerkingen (optioneel)</label>
+                <textarea id="kart-${i}-comments" name="kart-${i}-comments" rows="2" placeholder="Extra opmerkingen..."></textarea>
+            </div>
+        `;
+        kartList.appendChild(kartItem);
+    }
+    
+    // Laad laatste check data indien beschikbaar
+    const lastCheck = await getLastKartDailyCheck();
+    if (lastCheck && lastCheck.karts) {
+        // Vul formulier in met laatste check data
+        Object.keys(lastCheck.karts).forEach(kartNum => {
+            const kart = lastCheck.karts[kartNum];
+            const problemCheckbox = document.getElementById(`kart-${kartNum}-problem`);
+            const reasonField = document.getElementById(`kart-${kartNum}-reason-field`);
+            const reasonInput = document.getElementById(`kart-${kartNum}-reason`);
+            const commentsInput = document.getElementById(`kart-${kartNum}-comments`);
+            
+            if (kart.hasProblem) {
+                problemCheckbox.checked = true;
+                reasonField.style.display = 'block';
+                if (reasonInput) {
+                    reasonInput.value = kart.reason || '';
+                }
+            }
+            if (commentsInput && kart.comments) {
+                commentsInput.value = kart.comments;
+            }
+        });
+        
+        // Vul kuisen checkbox
+        if (lastCheck.allKartsCleaned !== undefined) {
+            document.getElementById('all-karts-cleaned').checked = lastCheck.allKartsCleaned;
+        }
+    }
+    
+    // Toon overlay
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Sluit kart daily overlay
+ */
+function closeKartDailyOverlay() {
+    const overlay = document.getElementById('kart-daily-overlay');
+    overlay.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+/**
+ * Toggle kart probleem reden veld
+ */
+function toggleKartProblem(kartNumber) {
+    const checkbox = document.getElementById(`kart-${kartNumber}-problem`);
+    const reasonField = document.getElementById(`kart-${kartNumber}-reason-field`);
+    const reasonInput = document.getElementById(`kart-${kartNumber}-reason`);
+    
+    if (checkbox.checked) {
+        reasonField.style.display = 'block';
+        if (reasonInput) {
+            reasonInput.required = true;
+        }
+    } else {
+        reasonField.style.display = 'none';
+        if (reasonInput) {
+            reasonInput.required = false;
+            reasonInput.value = '';
+        }
+    }
+}
+
+/**
+ * Valideer kart daily formulier
+ */
+function validateKartDailyForm() {
+    const errors = [];
+    
+    // Check alle karts (1-36)
+    for (let i = 1; i <= 36; i++) {
+        const problemCheckbox = document.getElementById(`kart-${i}-problem`);
+        const reasonInput = document.getElementById(`kart-${i}-reason`);
+        
+        if (problemCheckbox && problemCheckbox.checked) {
+            // Als probleem is aangevinkt, moet reden ingevuld zijn
+            if (!reasonInput || !reasonInput.value.trim()) {
+                errors.push(`Kart ${i}: Reden is verplicht wanneer er een probleem is`);
+            }
+        }
+    }
+    
+    return errors;
+}
+
+/**
+ * Handle kart daily formulier submit
+ */
+async function handleKartDailySubmit(event) {
+    event.preventDefault();
+    
+    const errorDiv = document.getElementById('kart-daily-form-error');
+    errorDiv.style.display = 'none';
+    errorDiv.textContent = '';
+    
+    // Valideer formulier
+    const errors = validateKartDailyForm();
+    if (errors.length > 0) {
+        errorDiv.textContent = errors.join('\n');
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    // Verzamel formulier data
+    const karts = {};
+    for (let i = 1; i <= 36; i++) {
+        const problemCheckbox = document.getElementById(`kart-${i}-problem`);
+        const reasonInput = document.getElementById(`kart-${i}-reason`);
+        const commentsInput = document.getElementById(`kart-${i}-comments`);
+        
+        karts[i.toString()] = {
+            hasProblem: problemCheckbox ? problemCheckbox.checked : false,
+            reason: reasonInput ? reasonInput.value.trim() : '',
+            comments: commentsInput ? commentsInput.value.trim() : ''
+        };
+    }
+    
+    const allKartsCleaned = document.getElementById('all-karts-cleaned').checked;
+    
+    const checkData = {
+        userName: currentUserName,
+        timestamp: Date.now(),
+        dateTime: formatDateTime(new Date()),
+        karts: karts,
+        allKartsCleaned: allKartsCleaned,
+        checkCompleted: true
+    };
+    
+    try {
+        await saveKartDailyCheck(checkData);
+        
+        // Update tool card display
+        await renderKartDailyStatus();
+        
+        // Sluit overlay
+        closeKartDailyOverlay();
+        
+        // Herlaad dashboard om status te updaten
+        await loadDashboard();
+    } catch (error) {
+        console.error('Error saving kart daily check:', error);
+        errorDiv.textContent = 'Er is een fout opgetreden bij het opslaan. Probeer het opnieuw.';
+        errorDiv.style.display = 'block';
+    }
+}
+
+/**
+ * Sla kart daily check op in Firebase
+ */
+async function saveKartDailyCheck(checkData) {
+    if (!currentUserName) {
+        throw new Error('Geen gebruikersnaam');
+    }
+    
+    if (!database || !firebaseFunctions) {
+        throw new Error('Firebase niet beschikbaar');
+    }
+    
+    try {
+        const { ref, push, set } = firebaseFunctions;
+        
+        // Sla volledige log op
+        const now = new Date();
+        const dateString = now.toISOString().split('T')[0];
+        const logsRef = ref(database, `logs/kart-daily-checks/${dateString}`);
+        await push(logsRef, checkData);
+        
+        // Update laatste klik voor tracking
+        const lastClickRef = ref(database, 'clicks/kart-daily-logboek');
+        await set(lastClickRef, {
+            timestamp: checkData.timestamp,
+            dateTime: checkData.dateTime,
+            userName: checkData.userName
+        });
+        
+        console.log('Kart daily check opgeslagen in Firebase');
+    } catch (error) {
+        console.error('Error saving to Firebase:', error);
+        throw error;
+    }
+}
+
+/**
+ * Haal laatste kart daily check op voor vandaag
+ */
+async function getLastKartDailyCheck() {
+    if (!database || !firebaseFunctions) {
+        return null;
+    }
+    
+    try {
+        const { ref, get, query, orderByChild, limitToLast } = firebaseFunctions;
+        const now = new Date();
+        const dateString = now.toISOString().split('T')[0];
+        const logsRef = ref(database, `logs/kart-daily-checks/${dateString}`);
+        
+        // Haal laatste check op
+        const logsQuery = query(logsRef, orderByChild('timestamp'), limitToLast(1));
+        const snapshot = await get(logsQuery);
+        
+        if (snapshot.exists()) {
+            const logs = snapshot.val();
+            // Vind de log met de hoogste timestamp
+            let lastLog = null;
+            let lastTimestamp = 0;
+            
+            Object.keys(logs).forEach(logId => {
+                const log = logs[logId];
+                if (log.timestamp && log.timestamp > lastTimestamp) {
+                    lastTimestamp = log.timestamp;
+                    lastLog = log;
+                }
+            });
+            
+            return lastLog;
+        }
+    } catch (error) {
+        console.error('Error loading kart daily check from Firebase:', error);
+    }
+    
+    return null;
+}
+
+/**
+ * Render kart daily status op tool card
+ */
+async function renderKartDailyStatus() {
+    const lastCheck = await getLastKartDailyCheck();
+    
+    if (!lastCheck) {
+        return null;
+    }
+    
+    // Tel aantal karts met problemen
+    let problemCount = 0;
+    if (lastCheck.karts) {
+        Object.keys(lastCheck.karts).forEach(kartNum => {
+            if (lastCheck.karts[kartNum].hasProblem) {
+                problemCount++;
+            }
+        });
+    }
+    
+    return {
+        lastCheck: lastCheck,
+        problemCount: problemCount,
+        allKartsCleaned: lastCheck.allKartsCleaned || false,
+        checkCompleted: lastCheck.checkCompleted || false
+    };
+}
+
+/**
  * Haal dagplanning status op uit Firebase
  */
 async function getDayPlanningStatus(dateString, userId) {
@@ -1853,6 +2203,18 @@ async function handlePlanningTaskClick(taskId, event) {
     
     // Als taak een toolId heeft, open de tool
     if (task.toolId) {
+        // Speciale behandeling voor kart-daily-logboek: open overlay
+        if (task.toolId === 'kart-daily-logboek') {
+            openKartDailyOverlay(event);
+            return;
+        }
+        
+        // Speciale behandeling voor kuismachine-logs: open overlay
+        if (task.toolId === 'kuismachine-logs') {
+            openKuismachineOverlay(event);
+            return;
+        }
+        
         // Vind de tool card en scroll ernaar toe
         const toolCard = document.querySelector(`.tool-card[data-tool-id="${task.toolId}"]`);
         if (toolCard) {
