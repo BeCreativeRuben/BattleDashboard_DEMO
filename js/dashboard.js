@@ -266,9 +266,9 @@ const generalTutorial = {
         {
             title: 'Dashboard Overzicht',
             content: 'Het dashboard bestaat uit verschillende secties: de header bovenaan met quick links, de dagplanning, de tool blokjes voor dagelijkse en wekelijkse taken, en de footer onderaan voor feedback.',
-            target: '.dashboard',
-            position: 'top',
-            highlight: 'section'
+            target: 'header',
+            position: 'bottom',
+            highlight: 'element'
         },
         {
             title: 'Dagplanning',
@@ -286,10 +286,10 @@ const generalTutorial = {
         },
         {
             title: 'Real-time Synchronisatie',
-            content: 'Het dashboard synchroniseert automatisch met andere devices. Als iemand anders op een tool klikt, zie je dit direct op je scherm. Dit zorgt ervoor dat iedereen altijd de meest actuele informatie ziet.',
-            target: '.tools-container',
-            position: 'top',
-            highlight: 'section'
+            content: 'Het dashboard synchroniseert automatisch met andere devices. Als iemand anders op een tool klikt, zie je dit direct op je scherm. Kijk naar "Laatst geklikt" bij de tool blokjes - deze informatie wordt real-time bijgewerkt. Dit zorgt ervoor dat iedereen altijd de meest actuele informatie ziet.',
+            target: '.tool-card:first-child .info-item:first-child',
+            position: 'right',
+            highlight: 'element'
         },
         {
             title: 'Tool Specifieke Tutorials',
@@ -308,7 +308,7 @@ const generalTutorial = {
         {
             title: 'Feedback Geven',
             content: 'Onderaan het dashboard vind je een footer met een feedback knop. Als je problemen tegenkomt of suggesties hebt, klik hierop om een melding in te dienen. Dit helpt ons om het dashboard te verbeteren.',
-            target: '.app-footer',
+            target: '.dashboard-footer',
             position: 'top',
             highlight: 'element'
         },
@@ -1015,7 +1015,10 @@ function showTutorialStep(stepIndex) {
     
     // Highlight element
     if (step.target && step.highlight !== 'none') {
-        highlightElement(step.target, step.position);
+        // Wacht even zodat overlay volledig is gerenderd
+        setTimeout(() => {
+            highlightElement(step.target, step.position);
+        }, 100);
     } else {
         removeHighlight();
         // Center tooltip voor geen highlight
@@ -1055,35 +1058,40 @@ function highlightElement(selector, position) {
         
         if (!spotlight || !tooltip) return;
         
-        // Bereken spotlight positie en grootte
+        // Bereken spotlight positie en grootte (gebruik getBoundingClientRect voor viewport-relative coördinaten)
         const padding = 10; // Extra padding rond element
-        const spotlightRect = {
-            top: rect.top - padding,
-            left: rect.left - padding,
-            width: rect.width + (padding * 2),
-            height: rect.height + (padding * 2)
-        };
-        
-        // Update spotlight met clip-path voor cutout effect
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
         
+        // Clip-path coördinaten (viewport-relative)
+        const left = Math.max(0, rect.left - padding);
+        const top = Math.max(0, rect.top - padding);
+        const right = Math.min(viewportWidth, rect.right + padding);
+        const bottom = Math.min(viewportHeight, rect.bottom + padding);
+        const width = right - left;
+        const height = bottom - top;
+        
+        // Maak clip-path polygon voor cutout effect
+        // De polygon maakt een "venster" in de donkere overlay
         spotlight.style.clipPath = `polygon(
             0% 0%, 
             0% 100%, 
-            ${spotlightRect.left}px 100%, 
-            ${spotlightRect.left}px ${spotlightRect.top}px, 
-            ${spotlightRect.left + spotlightRect.width}px ${spotlightRect.top}px, 
-            ${spotlightRect.left + spotlightRect.width}px ${spotlightRect.top + spotlightRect.height}px, 
-            ${spotlightRect.left}px ${spotlightRect.top + spotlightRect.height}px, 
-            ${spotlightRect.left}px 100%, 
-            ${viewportWidth}px 100%, 
-            ${viewportWidth}px 0%
+            ${left}px 100%, 
+            ${left}px ${top}px, 
+            ${right}px ${top}px, 
+            ${right}px ${bottom}px, 
+            ${left}px ${bottom}px, 
+            ${left}px 100%, 
+            100% 100%, 
+            100% 0%
         )`;
+        
+        // Zorg dat spotlight zichtbaar is
+        spotlight.style.display = 'block';
         
         // Positioneer tooltip
         positionTooltip(tooltip, rect, position);
-    }, 300);
+    }, 400);
 }
 
 /**
@@ -1132,7 +1140,8 @@ function positionTooltip(tooltip, elementRect, position) {
 function removeHighlight() {
     const spotlight = tutorialOverlay?.querySelector('.tutorial-spotlight');
     if (spotlight) {
-        spotlight.style.clipPath = 'none';
+        // Verberg spotlight volledig (geen cutout)
+        spotlight.style.clipPath = 'polygon(0% 0%, 0% 100%, 100% 100%, 100% 0%)';
     }
 }
 
