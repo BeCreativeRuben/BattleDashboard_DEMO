@@ -308,8 +308,8 @@ const generalTutorial = {
         {
             title: 'Feedback Geven',
             content: 'Onderaan het dashboard vind je een footer met een feedback knop. Als je problemen tegenkomt of suggesties hebt, klik hierop om een melding in te dienen. Dit helpt ons om het dashboard te verbeteren.',
-            target: '.dashboard-footer',
-            position: 'top',
+            target: '.footer-feedback-btn',
+            position: 'bottom',
             highlight: 'element'
         },
         {
@@ -1013,6 +1013,11 @@ function showTutorialStep(stepIndex) {
         tooltip.setAttribute('data-position', step.position || 'center');
     }
     
+    // Bij stap 10 (laatste stap), scroll naar boven
+    if (stepIndex === generalTutorial.steps.length - 1) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
     // Highlight element
     if (step.target && step.highlight !== 'none') {
         // Wacht even zodat overlay volledig is gerenderd
@@ -1059,17 +1064,16 @@ function highlightElement(selector, position) {
         if (!spotlight || !tooltip) return;
         
         // Bereken spotlight positie en grootte (gebruik getBoundingClientRect voor viewport-relative coördinaten)
-        const padding = 10; // Extra padding rond element
+        const padding = 15; // Extra padding rond element voor betere zichtbaarheid
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
         
         // Clip-path coördinaten (viewport-relative)
+        // Zorg dat we altijd wat extra ruimte hebben rond het element
         const left = Math.max(0, rect.left - padding);
         const top = Math.max(0, rect.top - padding);
         const right = Math.min(viewportWidth, rect.right + padding);
         const bottom = Math.min(viewportHeight, rect.bottom + padding);
-        const width = right - left;
-        const height = bottom - top;
         
         // Maak clip-path polygon voor cutout effect
         // De polygon maakt een "venster" in de donkere overlay
@@ -1116,9 +1120,21 @@ function positionTooltip(tooltip, elementRect, position) {
             case 'bottom':
                 top = elementRect.bottom + padding;
                 left = elementRect.left + (elementRect.width / 2) - (tooltipRect.width / 2);
-                // Als tooltip te laag is, plaats boven element
+                // Als tooltip te laag is of over element zou vallen, plaats boven element
                 if (top + tooltipRect.height > window.innerHeight - padding) {
                     top = elementRect.top - tooltipRect.height - padding;
+                    // Als dat ook niet werkt (element is onderaan scherm), plaats rechts of links
+                    if (top < padding) {
+                        // Probeer rechts
+                        if (elementRect.right + tooltipRect.width + padding < window.innerWidth) {
+                            top = elementRect.top + (elementRect.height / 2) - (tooltipRect.height / 2);
+                            left = elementRect.right + padding;
+                        } else if (elementRect.left - tooltipRect.width - padding > 0) {
+                            // Probeer links
+                            top = elementRect.top + (elementRect.height / 2) - (tooltipRect.height / 2);
+                            left = elementRect.left - tooltipRect.width - padding;
+                        }
+                    }
                 }
                 break;
             case 'left':
@@ -1169,7 +1185,12 @@ function removeHighlight() {
  */
 function nextTutorialStep() {
     if (currentTutorialStep < generalTutorial.steps.length - 1) {
-        showTutorialStep(currentTutorialStep + 1);
+        const nextStep = currentTutorialStep + 1;
+        // Als we naar de laatste stap gaan (stap 10), scroll naar boven
+        if (nextStep === generalTutorial.steps.length - 1) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        showTutorialStep(nextStep);
     } else {
         closeGeneralTutorial();
     }
