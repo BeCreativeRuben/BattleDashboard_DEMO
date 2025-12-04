@@ -1385,6 +1385,9 @@ header h1 {
     margin-bottom: 20px;
     padding-bottom: 12px;
     border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .kart-details-header h4 {
@@ -1392,6 +1395,31 @@ header h1 {
     color: #333;
     font-size: 1.1rem;
     font-weight: 600;
+    flex: 1;
+}
+
+.kart-details-close {
+    background: #f0f0f0;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    transition: all 0.2s ease;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.kart-details-close:hover {
+    background: #e0e0e0;
+    color: #333;
+    transform: scale(1.1);
 }
 
 .kart-item {

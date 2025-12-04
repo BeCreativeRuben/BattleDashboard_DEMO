@@ -2158,13 +2158,14 @@ async function openKartDailyOverlay(event) {
         kartItem.className = 'kart-block';
         kartItem.setAttribute('data-kart-number', i);
         kartItem.innerHTML = `
-            <div class="kart-block-number" onclick="toggleKartDetails(${i})">
+            <div class="kart-block-number" onclick="openKartDetails(${i})">
                 <span class="kart-number">${i}</span>
-                <input type="checkbox" id="kart-${i}-problem" name="kart-${i}-problem" class="kart-problem-checkbox-input" onchange="toggleKartProblem(${i})">
+                <input type="checkbox" id="kart-${i}-problem" name="kart-${i}-problem" class="kart-problem-checkbox-input" onchange="toggleKartProblem(${i})" onclick="event.stopPropagation()">
             </div>
             <div id="kart-${i}-details" class="kart-details" style="display: none;">
                 <div class="kart-details-header">
                     <h4>Kart ${i} - Probleem rapporteren</h4>
+                    <button type="button" class="kart-details-close" onclick="closeKartDetails(${i})" title="Sluit details">×</button>
                 </div>
                 <div id="kart-${i}-reason-field" class="kart-reason-field">
                     <div class="form-group">
@@ -2244,27 +2245,76 @@ function closeKartDailyOverlay() {
 }
 
 /**
- * Toggle kart details venster (bij klik op kart blokje)
+ * Open kart details venster (bij klik op kart blokje) - automatisch checkbox aanvinken
  */
-function toggleKartDetails(kartNumber) {
+function openKartDetails(kartNumber) {
+    // Sluit eerst alle andere openstaande kart details
+    for (let i = 1; i <= 36; i++) {
+        if (i !== kartNumber) {
+            const otherDetailsDiv = document.getElementById(`kart-${i}-details`);
+            const otherKartBlock = document.querySelector(`.kart-block[data-kart-number="${i}"]`);
+            
+            if (otherDetailsDiv && otherDetailsDiv.style.display !== 'none') {
+                otherDetailsDiv.style.display = 'none';
+            }
+            if (otherKartBlock) {
+                otherKartBlock.classList.remove('kart-block-active');
+            }
+        }
+    }
+    
+    const checkbox = document.getElementById(`kart-${kartNumber}-problem`);
+    const detailsDiv = document.getElementById(`kart-${kartNumber}-details`);
+    const kartBlock = document.querySelector(`.kart-block[data-kart-number="${kartNumber}"]`);
+    const reasonField = document.getElementById(`kart-${kartNumber}-reason-field`);
+    const reasonInput = document.getElementById(`kart-${kartNumber}-reason`);
+    
+    // Vink automatisch checkbox aan
+    if (checkbox && !checkbox.checked) {
+        checkbox.checked = true;
+        // Trigger change event om alle logica uit te voeren
+        toggleKartProblem(kartNumber);
+    }
+    
+    // Open details
+    if (detailsDiv) {
+        detailsDiv.style.display = 'block';
+    }
+    if (kartBlock) {
+        kartBlock.classList.add('kart-block-active', 'kart-block-has-problem');
+    }
+    if (reasonField) {
+        reasonField.style.display = 'block';
+    }
+    if (reasonInput) {
+        reasonInput.required = true;
+        // Focus op reason input voor snelle invoer
+        setTimeout(() => reasonInput.focus(), 100);
+    }
+}
+
+/**
+ * Sluit kart details venster (zonder checkbox te deselecteren)
+ */
+function closeKartDetails(kartNumber) {
     const detailsDiv = document.getElementById(`kart-${kartNumber}-details`);
     const kartBlock = document.querySelector(`.kart-block[data-kart-number="${kartNumber}"]`);
     
-    if (detailsDiv.style.display === 'none' || !detailsDiv.style.display) {
-        detailsDiv.style.display = 'block';
-        if (kartBlock) {
-            kartBlock.classList.add('kart-block-active');
-        }
-    } else {
+    if (detailsDiv) {
         detailsDiv.style.display = 'none';
-        if (kartBlock) {
-            kartBlock.classList.remove('kart-block-active');
+    }
+    if (kartBlock) {
+        kartBlock.classList.remove('kart-block-active');
+        // Behoud kart-block-has-problem class als checkbox nog checked is
+        const checkbox = document.getElementById(`kart-${kartNumber}-problem`);
+        if (!checkbox || !checkbox.checked) {
+            kartBlock.classList.remove('kart-block-has-problem');
         }
     }
 }
 
 /**
- * Toggle kart probleem reden veld
+ * Toggle kart probleem checkbox state (bij directe checkbox click)
  */
 function toggleKartProblem(kartNumber) {
     const checkbox = document.getElementById(`kart-${kartNumber}-problem`);
@@ -2273,13 +2323,16 @@ function toggleKartProblem(kartNumber) {
     const detailsDiv = document.getElementById(`kart-${kartNumber}-details`);
     const kartBlock = document.querySelector(`.kart-block[data-kart-number="${kartNumber}"]`);
     
-    // Als checkbox wordt aangevinkt, open details en maak reden verplicht
+    // Als checkbox wordt aangevinkt, maak reden verplicht en toon als probleem
     if (checkbox.checked) {
-        if (detailsDiv) {
+        if (detailsDiv && detailsDiv.style.display === 'none') {
             detailsDiv.style.display = 'block';
         }
         if (kartBlock) {
-            kartBlock.classList.add('kart-block-active', 'kart-block-has-problem');
+            kartBlock.classList.add('kart-block-has-problem');
+            if (detailsDiv && detailsDiv.style.display !== 'none') {
+                kartBlock.classList.add('kart-block-active');
+            }
         }
         if (reasonField) {
             reasonField.style.display = 'block';
@@ -2288,16 +2341,24 @@ function toggleKartProblem(kartNumber) {
             reasonInput.required = true;
         }
     } else {
-        // Als checkbox wordt uitgevinkt, maak reden niet verplicht maar laat details open
-        if (reasonField) {
-            reasonField.style.display = 'block';
-        }
+        // Als checkbox wordt uitgevinkt, maak reden niet verplicht en clear velden
         if (reasonInput) {
             reasonInput.required = false;
             reasonInput.value = '';
         }
+        const commentsInput = document.getElementById(`kart-${kartNumber}-comments`);
+        if (commentsInput) {
+            commentsInput.value = '';
+        }
         if (kartBlock) {
             kartBlock.classList.remove('kart-block-has-problem');
+        }
+        // Sluit details als checkbox wordt uitgevinkt
+        if (detailsDiv) {
+            detailsDiv.style.display = 'none';
+        }
+        if (kartBlock) {
+            kartBlock.classList.remove('kart-block-active');
         }
     }
 }
