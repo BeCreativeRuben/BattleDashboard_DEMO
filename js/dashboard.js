@@ -1471,10 +1471,16 @@ async function handleKuismachineSubmit(event) {
         : 'none';
 
     if (kuismachineNietGebruiktReasonStyle === 'none') {
-        if (kuismachineNietGebruiktRedenEl) kuismachineNietGebruiktRedenEl.required = false;
+        if (kuismachineNietGebruiktRedenEl) {
+            kuismachineNietGebruiktRedenEl.required = false;
+            kuismachineNietGebruiktRedenEl.removeAttribute('required');
+        }
     }
     if (stofzuigerNietGebruiktReasonStyle === 'none') {
-        if (stofzuigerNietGebruiktRedenEl) stofzuigerNietGebruiktRedenEl.required = false;
+        if (stofzuigerNietGebruiktRedenEl) {
+            stofzuigerNietGebruiktRedenEl.required = false;
+            stofzuigerNietGebruiktRedenEl.removeAttribute('required');
+        }
     }
     
     const formData = {
