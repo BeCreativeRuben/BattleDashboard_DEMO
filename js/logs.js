@@ -591,20 +591,92 @@ function toggleKartDetails(index, event) {
 }
 
 /**
+ * Render feedback tabel
+ */
+function renderFeedbackTable() {
+    const tbody = document.getElementById('feedback-table-body');
+    if (!tbody) {
+        console.error('Feedback table body niet gevonden');
+        return;
+    }
+    
+    if (filteredLogs.feedback.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty">Geen feedback gevonden</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = filteredLogs.feedback.map((log, index) => {
+        const date = new Date(log.timestamp);
+        const dateStr = date.toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' });
+        
+        const typeBadge = log.type === 'bug' ? 'badge-problem' : 
+                         log.type === 'feature' ? 'badge-success' : 
+                         log.type === 'improvement' ? 'badge-warning' : 'badge-info';
+        const typeText = log.type === 'bug' ? 'Bug' : 
+                        log.type === 'feature' ? 'Feature Request' : 
+                        log.type === 'improvement' ? 'Verbetering' : 'Anders';
+        
+        return `
+            <tr class="expandable-row" onclick="toggleFeedbackDetails(${index}, event)">
+                <td>${escapeHtml(dateStr)}</td>
+                <td><span class="badge ${typeBadge}">${escapeHtml(typeText)}</span></td>
+                <td>${escapeHtml(log.title)}</td>
+                <td>${escapeHtml(log.userName)}</td>
+                <td><span class="toggle-arrow"></span></td>
+            </tr>
+            <tr id="feedback-details-${index}" class="expanded-details-row" style="display: none;">
+                <td colspan="5" class="expanded-details">
+                    <h4>Feedback Details</h4>
+                    <div class="expanded-details-content">
+                        <div class="detail-item">
+                            <div class="detail-label">Beschrijving</div>
+                            <div class="detail-value">${escapeHtml(log.description)}</div>
+                        </div>
+                        ${log.userAgent ? `
+                        <div class="detail-item">
+                            <div class="detail-label">User Agent</div>
+                            <div class="detail-value">${escapeHtml(log.userAgent)}</div>
+                        </div>` : ''}
+                        ${log.url ? `
+                        <div class="detail-item">
+                            <div class="detail-label">Pagina URL</div>
+                            <div class="detail-value">${escapeHtml(log.url)}</div>
+                        </div>` : ''}
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+/**
+ * Toggle feedback details
+ */
+function toggleFeedbackDetails(index, event) {
+    if (event) {
+        event.stopPropagation();
+    }
+    const detailsRow = document.getElementById(`feedback-details-${index}`);
+    if (detailsRow) {
+        detailsRow.style.display = detailsRow.style.display === 'none' ? 'table-row' : 'none';
+    }
+}
+
+/**
  * Bereken statistieken
  */
 function calculateStats() {
-    const totalLogs = filteredLogs.clicks.length + filteredLogs.kuismachine.length + filteredLogs.kartDaily.length;
+    const totalLogs = filteredLogs.clicks.length + filteredLogs.kuismachine.length + filteredLogs.kartDaily.length + filteredLogs.feedback.length;
     
     // Meest actieve gebruiker
     const userCounts = {};
-    [...filteredLogs.clicks, ...filteredLogs.kuismachine, ...filteredLogs.kartDaily].forEach(log => {
+    [...filteredLogs.clicks, ...filteredLogs.kuismachine, ...filteredLogs.kartDaily, ...filteredLogs.feedback].forEach(log => {
         userCounts[log.userName] = (userCounts[log.userName] || 0) + 1;
     });
     
-    const mostActiveUser = Object.keys(userCounts).reduce((a, b) => 
-        userCounts[a] > userCounts[b] ? a : b, 'Geen'
-    );
+    const mostActiveUser = Object.keys(userCounts).length > 0 
+        ? Object.keys(userCounts).reduce((a, b) => userCounts[a] > userCounts[b] ? a : b)
+        : 'Geen';
     
     // Update UI
     document.getElementById('stat-total').textContent = totalLogs;
@@ -612,6 +684,7 @@ function calculateStats() {
     document.getElementById('stat-clicks').textContent = filteredLogs.clicks.length;
     document.getElementById('stat-kuismachine').textContent = filteredLogs.kuismachine.length;
     document.getElementById('stat-kart-daily').textContent = filteredLogs.kartDaily.length;
+    document.getElementById('stat-feedback').textContent = filteredLogs.feedback.length;
 }
 
 /**
