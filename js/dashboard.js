@@ -1455,6 +1455,20 @@ async function handleKuismachineSubmit(event) {
     errorDiv.textContent = '';
     
     // Verzamel formulier data
+    // Haal niet-gebruikt redenen op, controleer of het veld zichtbaar is
+    const kuismachineNietGebruiktReasonEl = document.getElementById('kuismachine-niet-gebruikt-reason');
+    const stofzuigerNietGebruiktReasonEl = document.getElementById('stofzuiger-niet-gebruikt-reason');
+    const kuismachineNietGebruiktRedenEl = document.getElementById('kuismachine-niet-gebruikt-reden');
+    const stofzuigerNietGebruiktRedenEl = document.getElementById('stofzuiger-niet-gebruikt-reden');
+    
+    // Verwijder required attribute van verborgen velden om HTML5 validatie te voorkomen
+    if (kuismachineNietGebruiktReasonEl && kuismachineNietGebruiktReasonEl.style.display === 'none') {
+        if (kuismachineNietGebruiktRedenEl) kuismachineNietGebruiktRedenEl.required = false;
+    }
+    if (stofzuigerNietGebruiktReasonEl && stofzuigerNietGebruiktReasonEl.style.display === 'none') {
+        if (stofzuigerNietGebruiktRedenEl) stofzuigerNietGebruiktRedenEl.required = false;
+    }
+    
     const formData = {
         kuismachineGebruikt: document.getElementById('kuismachine-gebruikt').checked,
         kuismachinePisteA: document.getElementById('kuismachine-piste-a').checked,
@@ -1463,7 +1477,7 @@ async function handleKuismachineSubmit(event) {
         kuismachineEindtijd: document.getElementById('kuismachine-eindtijd').value.trim(),
         kuismachineUitgekuist: document.getElementById('kuismachine-uitgekuist').checked,
         kuismachineReden: document.getElementById('kuismachine-reden').value.trim(),
-        kuismachineNietGebruiktReden: document.getElementById('kuismachine-niet-gebruikt-reden')?.value.trim() || '',
+        kuismachineNietGebruiktReden: kuismachineNietGebruiktRedenEl ? kuismachineNietGebruiktRedenEl.value.trim() : '',
         stofzuigerGebruikt: document.getElementById('stofzuiger-gebruikt').checked,
         stofzuigerPisteA: document.getElementById('stofzuiger-piste-a').checked,
         stofzuigerPisteB: document.getElementById('stofzuiger-piste-b').checked,
@@ -1471,7 +1485,7 @@ async function handleKuismachineSubmit(event) {
         stofzuigerEindtijd: document.getElementById('stofzuiger-eindtijd').value.trim(),
         stofzuigerUitgekuist: document.getElementById('stofzuiger-uitgekuist').checked,
         stofzuigerReden: document.getElementById('stofzuiger-reden').value.trim(),
-        stofzuigerNietGebruiktReden: document.getElementById('stofzuiger-niet-gebruikt-reden')?.value.trim() || ''
+        stofzuigerNietGebruiktReden: stofzuigerNietGebruiktRedenEl ? stofzuigerNietGebruiktRedenEl.value.trim() : ''
     };
     
     // Valideer
