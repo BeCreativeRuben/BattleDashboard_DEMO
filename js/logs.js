@@ -34,6 +34,10 @@ document.addEventListener('DOMContentLoaded', () => {
 let updateDebounceTimer = null;
 const UPDATE_DEBOUNCE_MS = 1000; // Wacht 1 seconde na laatste update
 
+// Debounce timer voor search input
+let searchDebounceTimer = null;
+const SEARCH_DEBOUNCE_MS = 300; // Korter dan update debounce voor snellere respons
+
 /**
  * Controleer authenticatie status
  */
@@ -426,14 +430,42 @@ function applyFilters() {
         return true;
     });
     
-    // Render tabellen
-    renderClickLogsTable();
-    renderKuismachineLogsTable();
-    renderKartDailyChecksTable();
-    renderFeedbackTable();
+    // Render alleen de actieve tabel (performance optimalisatie)
+    const activeTab = document.querySelector('.tab-content.active');
+    if (activeTab) {
+        const tabId = activeTab.id;
+        if (tabId === 'tab-clicks') {
+            renderClickLogsTable();
+        } else if (tabId === 'tab-kuismachine') {
+            renderKuismachineLogsTable();
+        } else if (tabId === 'tab-kart-daily') {
+            renderKartDailyChecksTable();
+        } else if (tabId === 'tab-feedback') {
+            renderFeedbackTable();
+        }
+    } else {
+        // Fallback: render allemaal bij eerste load of als geen tab actief is
+        renderClickLogsTable();
+        renderKuismachineLogsTable();
+        renderKartDailyChecksTable();
+        renderFeedbackTable();
+    }
     
     // Update statistieken
     calculateStats();
+}
+
+/**
+ * Debounced search functie - wacht tot gebruiker stopt met typen
+ */
+function debouncedSearch() {
+    if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+    }
+    searchDebounceTimer = setTimeout(() => {
+        applyFilters();
+        searchDebounceTimer = null;
+    }, SEARCH_DEBOUNCE_MS);
 }
 
 /**
