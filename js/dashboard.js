@@ -1858,8 +1858,42 @@ async function openKuismachineOverlay(event) {
         submitButton.textContent = 'Opslaan';
     }
     
-    // Laad en toon logs van vandaag die nog niet uitgekuist zijn
-    await loadTodayLogsForEditing();
+    // Check of er al een log is voor vandaag
+    const todayLog = await getTodayKuismachineLog();
+    
+    if (todayLog) {
+        // Laad bestaande log automatisch in het formulier
+        await loadLogIntoForm(todayLog.id, null);
+        
+        // Verberg bewerk sectie (niet nodig want log is al geladen)
+        const editSection = document.getElementById('edit-today-logs-section');
+        if (editSection) {
+            editSection.style.display = 'none';
+        }
+        
+        // Toon melding dat dit een update is
+        const errorDiv = document.getElementById('kuismachine-form-error');
+        if (errorDiv) {
+            errorDiv.style.display = 'block';
+            errorDiv.style.background = '#d1ecf1';
+            errorDiv.style.borderColor = '#bee5eb';
+            errorDiv.style.color = '#0c5460';
+            errorDiv.textContent = 'ℹ️ Er is al een log voor vandaag. Je kunt deze hier aanpassen.';
+        }
+    } else {
+        // Geen log voor vandaag, verberg bewerk sectie
+        const editSection = document.getElementById('edit-today-logs-section');
+        if (editSection) {
+            editSection.style.display = 'none';
+        }
+        
+        // Verberg melding
+        const errorDiv = document.getElementById('kuismachine-form-error');
+        if (errorDiv) {
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+        }
+    }
     
     // Toon overlay
     overlay.style.display = 'flex';
@@ -2204,9 +2238,10 @@ async function handleKuismachineSubmit(event) {
     submitButton.textContent = 'Opslaan...';
     
     try {
-        // Check of we een bestaande log aan het bewerken zijn
+        // Check of er al een log is voor vandaag
+        const todayLog = await getTodayKuismachineLog();
         const form = document.getElementById('kuismachine-form');
-        const editingLogId = form.dataset.editingLogId;
+        const editingLogId = form.dataset.editingLogId || (todayLog ? todayLog.id : null);
         
         if (editingLogId) {
             // Update bestaande log
@@ -2215,8 +2250,15 @@ async function handleKuismachineSubmit(event) {
             // Reset editing flag
             delete form.dataset.editingLogId;
         } else {
-            // Nieuwe log aanmaken
-            await saveKuismachineLog(formData);
+            // Check nogmaals of er geen log is voor vandaag (double check)
+            const checkTodayLog = await getTodayKuismachineLog();
+            if (checkTodayLog) {
+                // Er is al een log, update deze
+                await updateKuismachineLog(formData, checkTodayLog.id);
+            } else {
+                // Nieuwe log aanmaken
+                await saveKuismachineLog(formData);
+            }
         }
         
         // Success - sluit overlay en update card
@@ -2238,6 +2280,7 @@ async function handleKuismachineSubmit(event) {
 
 /**
  * Sla kuismachine log op in Firebase
+ * Als er al een log is voor vandaag, wordt deze geüpdatet in plaats van een nieuwe aan te maken
  */
 async function saveKuismachineLog(formData) {
     if (!currentUserName) {
@@ -2251,9 +2294,19 @@ async function saveKuismachineLog(formData) {
     try {
         const { ref, push, set } = firebaseFunctions;
         
-        // Sla volledige log op
-        const logsRef = ref(database, 'logs/kuismachine-logs');
-        await push(logsRef, formData);
+        // Check of er al een log is voor vandaag
+        const todayLog = await getTodayKuismachineLog();
+        
+        if (todayLog) {
+            // Update bestaande log in plaats van nieuwe aan te maken
+            await updateKuismachineLog(formData, todayLog.id);
+            console.log('Kuismachine log geüpdatet in Firebase (was al aanwezig voor vandaag)');
+        } else {
+            // Sla nieuwe log op
+            const logsRef = ref(database, 'logs/kuismachine-logs');
+            await push(logsRef, formData);
+            console.log('Nieuwe kuismachine log opgeslagen in Firebase');
+        }
         
         // Update laatste klik voor tracking
         const lastClickRef = ref(database, 'clicks/kuismachine-logs');
@@ -2262,11 +2315,52 @@ async function saveKuismachineLog(formData) {
             dateTime: formData.dateTime,
             userName: formData.userName
         });
-        
-        console.log('Kuismachine log opgeslagen in Firebase');
     } catch (error) {
         console.error('Error saving to Firebase:', error);
         throw error;
+    }
+}
+
+/**
+ * Haal de eerste kuismachine log van vandaag op (er mag maar 1 per dag zijn)
+ */
+async function getTodayKuismachineLog() {
+    if (!database || !firebaseFunctions) {
+        return null;
+    }
+    
+    try {
+        const { ref, get } = firebaseFunctions;
+        const logsRef = ref(database, 'logs/kuismachine-logs');
+        const snapshot = await get(logsRef);
+        
+        if (!snapshot.exists()) {
+            return null;
+        }
+        
+        const logs = snapshot.val();
+        const today = new Date();
+        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+        const todayEnd = todayStart + 86400000; // 24 uur later
+        
+        // Zoek de eerste log van vandaag
+        for (const logId in logs) {
+            const log = logs[logId];
+            const logTimestamp = log.timestamp || 0;
+            
+            // Check of log van vandaag is
+            if (logTimestamp >= todayStart && logTimestamp < todayEnd) {
+                return {
+                    id: logId,
+                    ...log
+                };
+            }
+        }
+        
+        return null;
+    } catch (error) {
+        console.error('Error loading today kuismachine log:', error);
+        return null;
     }
 }
 
@@ -2530,9 +2624,6 @@ async function markMachineAsUitgekuist(logId, machineType, event) {
     
     try {
         await updateKuismachineLogUitgekuist(logId, machineType, true);
-        
-        // Herlaad de logs lijst
-        await loadTodayLogsForEditing();
         
         // Update tool card om nieuwe status te tonen
         const toolCard = document.querySelector('.tool-card[data-tool-id="kuismachine-logs"]');
