@@ -219,6 +219,10 @@ async function loadKuismachineLogs(database, ref, get) {
                     stofzuigerEindtijd: log.stofzuigerEindtijd || '',
                     stofzuigerReden: log.stofzuigerReden || '',
                     stofzuigerNietGebruiktReden: log.stofzuigerNietGebruiktReden || '',
+                    updatedLater: log.updatedLater || false,
+                    updatedTimestamp: log.updatedTimestamp || null,
+                    updatedDateTime: log.updatedDateTime || '',
+                    updatedBy: log.updatedBy || '',
                     type: 'kuismachine'
                 });
             });
@@ -563,8 +567,20 @@ function renderKuismachineLogsTable() {
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">Uitgekuist</div>
-                            <div class="detail-value">${log.kuismachineUitgekuist ? '<span class="badge badge-yes">Ja</span>' : '<span class="badge badge-no">Nee</span>'}</div>
+                            <div class="detail-value">
+                                ${log.kuismachineUitgekuist ? '<span class="badge badge-yes">Ja</span>' : '<span class="badge badge-no">Nee</span>'}
+                                ${log.updatedLater && log.kuismachineUitgekuist ? '<span class="badge" style="background: #fff3cd; color: #856404; margin-left: 8px;" title="Achteraf aangepast">✏️ Achteraf aangepast</span>' : ''}
+                            </div>
                         </div>
+                        ${log.updatedLater && log.kuismachineUitgekuist && log.updatedTimestamp ? `
+                        <div class="detail-item" style="grid-column: 1 / -1;">
+                            <div class="detail-label">Achteraf aangepast</div>
+                            <div class="detail-value" style="color: #856404;">
+                                <strong>✏️ Aangepast op:</strong> ${escapeHtml(new Date(log.updatedTimestamp).toLocaleString('nl-NL'))}
+                                ${log.updatedBy ? ` | <strong>Door:</strong> ${escapeHtml(log.updatedBy)}` : ''}
+                            </div>
+                        </div>
+                        ` : ''}
                         ${log.kuismachineReden ? `
                         <div class="detail-item" style="grid-column: 1 / -1;">
                             <div class="detail-label">Commentaar (niet uitgekuist)</div>
@@ -609,8 +625,20 @@ function renderKuismachineLogsTable() {
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">Uitgekuist</div>
-                            <div class="detail-value">${log.stofzuigerUitgekuist ? '<span class="badge badge-yes">Ja</span>' : '<span class="badge badge-no">Nee</span>'}</div>
+                            <div class="detail-value">
+                                ${log.stofzuigerUitgekuist ? '<span class="badge badge-yes">Ja</span>' : '<span class="badge badge-no">Nee</span>'}
+                                ${log.updatedLater && log.stofzuigerUitgekuist ? '<span class="badge" style="background: #fff3cd; color: #856404; margin-left: 8px;" title="Achteraf aangepast">✏️ Achteraf aangepast</span>' : ''}
+                            </div>
                         </div>
+                        ${log.updatedLater && log.stofzuigerUitgekuist && log.updatedTimestamp ? `
+                        <div class="detail-item" style="grid-column: 1 / -1;">
+                            <div class="detail-label">Achteraf aangepast</div>
+                            <div class="detail-value" style="color: #856404;">
+                                <strong>✏️ Aangepast op:</strong> ${escapeHtml(new Date(log.updatedTimestamp).toLocaleString('nl-NL'))}
+                                ${log.updatedBy ? ` | <strong>Door:</strong> ${escapeHtml(log.updatedBy)}` : ''}
+                            </div>
+                        </div>
+                        ` : ''}
                         ${log.stofzuigerReden ? `
                         <div class="detail-item" style="grid-column: 1 / -1;">
                             <div class="detail-label">Commentaar (niet uitgekuist)</div>
@@ -1166,6 +1194,10 @@ function setupFirebaseListeners() {
                             stofzuigerEindtijd: log.stofzuigerEindtijd || '',
                             stofzuigerReden: log.stofzuigerReden || '',
                             stofzuigerNietGebruiktReden: log.stofzuigerNietGebruiktReden || '',
+                            updatedLater: log.updatedLater || false,
+                            updatedTimestamp: log.updatedTimestamp || null,
+                            updatedDateTime: log.updatedDateTime || '',
+                            updatedBy: log.updatedBy || '',
                             type: 'kuismachine'
                         });
                         

@@ -4,7 +4,7 @@ const tools = [
     {
         id: 'cash-payments',
         title: 'Cash & Payments Employees',
-        url: 'https://docs.google.com/spreadsheets/d/1NRhb54013pCnwgjNvl6OgvL7UAzP_xarv601Va_DFNY/edit?gid=263458102#gid=263458102',
+        url: 'https://docs.google.com/spreadsheets/d/1NRhb54013pCnwgjNvl6OgvL7UAzP_xarv601Va_DFNY/edit?gid=269408941#gid=269408941',
         frequency: 'daily'
     },
     {
@@ -57,22 +57,47 @@ const tutorials = {
         sections: [
             {
                 title: 'Waarom invullen?',
-                content: 'Dit document helpt ons om alle cash transacties en employee payments bij te houden. Het is belangrijk voor financiële tracking en rapportage.',
-                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Cash+Payments+1'
+                content: 'Dit document moet dagelijks worden ingevuld om alle geldzaken bij te houden van Battlekart. Het is essentieel voor financiële tracking, rapportage en het bijhouden van alle cash transacties en employee payments.',
+                image: null
             },
             {
-                title: 'Stap 1: Open het document',
-                content: 'Klik op de link om het Google Sheets document te openen. Zorg dat je de juiste rechten hebt om te bewerken.',
-                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Cash+Payments+2'
+                title: 'Belangrijk: Selecteer de juiste maand',
+                content: 'Zorg er altijd voor dat je de juiste maand selecteert onderaan in het document. Dit is cruciaal om de gegevens op de juiste plaats te registreren. Controleer de maand-selectie voordat je begint met invullen.',
+                image: null
             },
             {
-                title: 'Stap 2: Vul de gegevens in',
-                content: 'Vul voor elke transactie de datum, het bedrag, de beschrijving en de betrokken employee in. Controleer altijd of de bedragen kloppen.',
-                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Cash+Payments+3'
+                title: 'Cash Opening',
+                content: 'De cash opening moet altijd correct zijn. Controleer het startbedrag en vul dit nauwkeurig in.',
+                image: null
+            },
+            {
+                title: 'Cash Sluiting',
+                content: 'De cash sluiting moet altijd correct worden ingevuld. Tel alle cash transacties zorgvuldig op en controleer of het totaal klopt.',
+                image: null
+            },
+            {
+                title: 'Betaalterminals - Stap 1: Neem beide terminals',
+                content: 'Neem beide betaalterminals mee en ga naar de transactielijst van die dag. Je kunt in de transactielijst met de code 1015 bij beide terminals.',
+                image: null
+            },
+            {
+                title: 'Betaalterminals - Stap 2: Tel de bedragen op',
+                content: 'Tel de bedragen van beide terminals op en geef die in in "Betaalterminals som". Controleer of de totalen kloppen voordat je ze invoert.',
+                image: null
+            },
+            {
+                title: 'Cash-envelop - Stap 1: Vul de envelop correct',
+                content: 'Vul de cash-envelop correct in. Zorg dat de cash van die dag + de transactielijsten in de envelop zitten.',
+                image: null
+            },
+            {
+                title: 'Cash-envelop - Stap 2: Doublecheck en bewaar',
+                content: 'Doublecheck of alles klopt voordat je de envelop in de kluis steekt. Controleer:\n• Cash bedrag klopt\n• Transactielijsten zijn aanwezig\n• Envelop is correct gelabeld',
+                image: null
             },
             {
                 title: 'Tips',
-                content: '• Sla regelmatig op tijdens het invullen\n• Controleer de totalen aan het einde\n• Neem contact op bij twijfel over een transactie',
+                content: '• Vul dit document dagelijks in aan het einde van de dag\n• Controleer altijd de maand-selectie onderaan\n• Tel alle bedragen dubbel na\n• Bewaar de envelop altijd veilig in de kluis\n• Neem contact op bij twijfel over een transactie',
                 image: null
             }
         ]
@@ -84,21 +109,31 @@ const tutorials = {
             {
                 title: 'Waarom invullen?',
                 content: 'Het kart daily logboek helpt ons om de status van alle karts bij te houden, inclusief onderhoud, reparaties en gebruik. Dit is essentieel voor veiligheid en planning.',
-                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Kart+Daily+1'
+                image: null
             },
             {
-                title: 'Stap 1: Download het bestand',
-                content: 'Klik op de link om het Excel bestand te downloaden. Open het in Excel of een compatibel programma.',
-                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Kart+Daily+2'
+                title: 'Daily Check - Wat testen?',
+                content: 'Als daily check test je de standaard zaken zoals:\n• Werking van de knopjes\n• Pedalen\n• Sensors\n\nControleer of alles correct functioneert voordat je verder gaat.',
+                image: null
             },
             {
-                title: 'Stap 2: Vul per kart in',
-                content: 'Voor elke kart noteer je de status, eventuele problemen, onderhoud dat is uitgevoerd, en wie de kart heeft gebruikt.',
-                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Kart+Daily+3'
+                title: 'Daily Check - Kuisen',
+                content: 'Kuisen is een belangrijk onderdeel van de daily check:\n• Sturen kuisen (liefst met vochtige doek)\n• Schermen kuisen\n• Zitjes kuisen\n\nZorg dat alles schoon is voordat je de kart gebruikt.',
+                image: null
+            },
+            {
+                title: 'Problemen rapporteren',
+                content: 'Geef alleen de karts aan die problemen hebben. Wees specifiek bij het beschrijven van het probleem:\n• Wat is er mis?\n• Wanneer is het opgemerkt?\n• Is het urgent?',
+                image: null
+            },
+            {
+                title: 'Karts gekuist aangeven',
+                content: 'Zeker en vast aangeven als je de karts hebt gekuist. Vink het "Karts gekuist" vakje aan onderaan het formulier. Dit is belangrijk voor tracking en kwaliteitscontrole.',
+                image: null
             },
             {
                 title: 'Tips',
-                content: '• Wees specifiek bij problemen\n• Noteer altijd de tijd van meldingen\n• Upload het bestand na invullen',
+                content: '• Test systematisch alle onderdelen\n• Kuisen met vochtige doek voor sturen\n• Wees specifiek bij problemen\n• Vink altijd aan als karts zijn gekuist\n• Noteer altijd de tijd van meldingen',
                 image: null
             }
         ]
@@ -110,21 +145,36 @@ const tutorials = {
             {
                 title: 'Waarom invullen?',
                 content: 'Het daily report geeft een overzicht van de dagelijkse activiteiten, problemen en belangrijke gebeurtenissen. Dit helpt bij communicatie en planning.',
-                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Daily+Report+1'
+                image: null
+            },
+            {
+                title: 'Hoe invullen?',
+                content: 'Vul de template gewoon in. De template heeft een vaste structuur die je moet volgen.',
+                image: null
+            },
+            {
+                title: 'Template structuur',
+                content: 'DAILY REPORT [datum]\n\nNaam onthaalverantwoordelijke: [naam]\n\nVertraging op de piste?\n/\nZo ja, tussen welke tijd?\n/\nZaten we hierdoor achter op schema?\n/\n\nOngelukkige klanten:\n/\nZo ja, waarom?\n/\n\nBugs / problemen?\n/\n\nDiversen:\n\nAanwezigen: [lijst van namen]\n\nEinde van dienst drankjes:\n[Naam]: [drankje]\n[Naam]: [drankje]\n...',
+                image: null
             },
             {
                 title: 'Stap 1: Open het document',
-                content: 'Download het Word document en open het. Je kunt het ook online bewerken als je de juiste rechten hebt.',
-                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Daily+Report+2'
+                content: 'Klik op de link om het Word document te openen. Je kunt het ook online bewerken als je de juiste rechten hebt.',
+                image: null
             },
             {
-                title: 'Stap 2: Vul de secties in',
-                content: 'Vul alle relevante secties in: bezoekersaantallen, incidenten, onderhoud, opmerkingen, en andere belangrijke informatie van de dag.',
-                image: 'https://via.placeholder.com/800x400?text=Placeholder+Screenshot+Daily+Report+3'
+                title: 'Stap 2: Vul de template in',
+                content: 'Vul alle secties van de template in:\n• Naam onthaalverantwoordelijke\n• Vertraging op de piste (met subvragen)\n• Ongelukkige klanten (met waarom)\n• Bugs / problemen\n• Diversen\n• Aanwezigen\n• Einde van dienst drankjes (per persoon)',
+                image: null
+            },
+            {
+                title: 'Voorbeeld: Einde van dienst drankjes',
+                content: 'Vul per persoon in welke drankjes ze hebben genomen:\n\nMauro: Omer\nJonas: Omer\nSven: Redbull\nKayo: Omer\nRuben: Omer',
+                image: null
             },
             {
                 title: 'Tips',
-                content: '• Vul het rapport in aan het einde van de dag\n• Wees objectief en duidelijk\n• Vermeld alle belangrijke gebeurtenissen',
+                content: '• Vul het rapport in aan het einde van de dag\n• Wees objectief en duidelijk\n• Vermeld alle belangrijke gebeurtenissen\n• Vul alle secties van de template in\n• Noteer alle aanwezigen en hun drankjes',
                 image: null
             }
         ]
@@ -238,6 +288,57 @@ const tutorials = {
             {
                 title: 'Tips',
                 content: '• Neem de tijd voor een grondige check\n• Wees eerlijk over de status van elke kart\n• Plan tijd in voor eventuele reparaties',
+                image: null
+            }
+        ]
+    },
+    'bk-panel': {
+        title: 'BK Panel - Tutorial',
+        description: 'Leer hoe je het BK Panel gebruikt en welke taken je moet uitvoeren.',
+        sections: [
+            {
+                title: 'Waarom gebruiken?',
+                content: 'Het BK Panel is het centrale systeem voor het beheren van verschillende taken en processen bij Battlekart. Het is belangrijk om alle taken correct uit te voeren.',
+                image: null
+            },
+            {
+                title: 'Stap 1: Open BK Panel',
+                content: 'Klik op de link om het BK Panel te openen. Zorg dat je ingelogd bent met de juiste account.',
+                image: null
+            },
+            {
+                title: 'Checklists invullen',
+                content: 'Ga naar Checklists → Execute → Select Checklist. Vul alle checklists in die voor die dag van toepassing zijn. Zorg dat je alle items afvinkt die zijn voltooid.',
+                image: null
+            },
+            {
+                title: 'In- en uitklokken',
+                content: 'Zeker en vast in- en uitklokken via het BK Panel. Dit is belangrijk voor tijdregistratie en planning. Vergeet niet om jezelf uit te klokken aan het einde van je dienst.',
+                image: null
+            },
+            {
+                title: 'Beamers aanzetten',
+                content: 'Zet de beamers altijd aan als er klanten zijn. Controleer of ze correct werken en de juiste content tonen.',
+                image: null
+            },
+            {
+                title: 'Karts opladen',
+                content: 'Zorg er zeker voor dat de karts opgeladen zijn. Controleer de batterijstatus en laad indien nodig op voordat klanten arriveren.',
+                image: null
+            },
+            {
+                title: 'Photobooth checken',
+                content: 'Check de photobooth regelmatig. Controleer of deze correct werkt en of er voldoende papier/inkt is.',
+                image: null
+            },
+            {
+                title: 'TV\'s checken',
+                content: 'Check de TV\'s regelmatig. Zet de logo\'s B2B aan of uit indien nodig. Controleer of alle schermen correct werken en de juiste content tonen.',
+                image: null
+            },
+            {
+                title: 'Tips',
+                content: '• Gebruik de link als hyperlink om direct naar BK Panel te gaan\n• Vul alle checklists dagelijks in\n• Vergeet niet in- en uit te klokken\n• Controleer beamers, karts, photobooth en TV\'s regelmatig\n• Zet logo\'s B2B aan/uit wanneer nodig',
                 image: null
             }
         ]
@@ -1644,7 +1745,7 @@ function escapeHtml(text) {
 /**
  * Open kuismachine overlay
  */
-function openKuismachineOverlay(event) {
+async function openKuismachineOverlay(event) {
     if (event) {
         event.preventDefault();
     }
@@ -1692,6 +1793,9 @@ function openKuismachineOverlay(event) {
     // Update required status voor reden velden
     toggleUitgekuistFields('kuismachine');
     toggleUitgekuistFields('stofzuiger');
+    
+    // Laad en toon logs van vandaag die nog niet uitgekuist zijn
+    await loadTodayLogsForEditing();
     
     // Toon overlay
     overlay.style.display = 'flex';
@@ -2074,6 +2178,221 @@ async function saveKuismachineLog(formData) {
         console.log('Kuismachine log opgeslagen in Firebase');
     } catch (error) {
         console.error('Error saving to Firebase:', error);
+        throw error;
+    }
+}
+
+/**
+ * Haal kuismachine logs van vandaag op die nog niet uitgekuist zijn
+ */
+async function getTodayKuismachineLogs() {
+    if (!database || !firebaseFunctions) {
+        return [];
+    }
+    
+    try {
+        const { ref, get } = firebaseFunctions;
+        const logsRef = ref(database, 'logs/kuismachine-logs');
+        const snapshot = await get(logsRef);
+        
+        if (!snapshot.exists()) {
+            return [];
+        }
+        
+        const logs = snapshot.val();
+        const today = new Date();
+        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+        const todayEnd = todayStart + 86400000; // 24 uur later
+        
+        const todayLogs = [];
+        
+        Object.keys(logs).forEach(logId => {
+            const log = logs[logId];
+            const logTimestamp = log.timestamp || 0;
+            
+            // Check of log van vandaag is
+            if (logTimestamp >= todayStart && logTimestamp < todayEnd) {
+                const normalizedLog = {
+                    id: logId,
+                    ...log,
+                    kuismachineGebruikt: log.kuismachineGebruikt === true || log.kuismachineGebruikt === 'true',
+                    kuismachineUitgekuist: log.kuismachineUitgekuist === true || log.kuismachineUitgekuist === 'true',
+                    stofzuigerGebruikt: log.stofzuigerGebruikt === true || log.stofzuigerGebruikt === 'true',
+                    stofzuigerUitgekuist: log.stofzuigerUitgekuist === true || log.stofzuigerUitgekuist === 'true',
+                    updatedLater: log.updatedLater === true || log.updatedLater === 'true'
+                };
+                
+                // Alleen logs waar machines gebruikt zijn maar niet uitgekuist
+                if ((normalizedLog.kuismachineGebruikt && !normalizedLog.kuismachineUitgekuist) ||
+                    (normalizedLog.stofzuigerGebruikt && !normalizedLog.stofzuigerUitgekuist)) {
+                    todayLogs.push(normalizedLog);
+                }
+            }
+        });
+        
+        // Sorteer op timestamp (oudste eerst)
+        todayLogs.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        
+        return todayLogs;
+    } catch (error) {
+        console.error('Error loading today kuismachine logs:', error);
+        return [];
+    }
+}
+
+/**
+ * Laad logs van vandaag en toon ze voor bewerking
+ */
+async function loadTodayLogsForEditing() {
+    const editSection = document.getElementById('edit-today-logs-section');
+    const logsList = document.getElementById('today-logs-list');
+    
+    if (!editSection || !logsList) {
+        return;
+    }
+    
+    try {
+        const todayLogs = await getTodayKuismachineLogs();
+        
+        if (todayLogs.length === 0) {
+            editSection.style.display = 'none';
+            return;
+        }
+        
+        editSection.style.display = 'block';
+        
+        let logsHTML = '<p style="margin-bottom: 16px; color: #666; font-size: 0.9rem;">Logs van vandaag die nog niet uitgekuist zijn:</p>';
+        
+        todayLogs.forEach(log => {
+            const logDate = new Date(log.timestamp);
+            const timeStr = logDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+            
+            logsHTML += '<div class="today-log-item" style="margin-bottom: 16px; padding: 12px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e0e0e0;">';
+            logsHTML += `<div style="margin-bottom: 8px;"><strong>Tijd:</strong> ${escapeHtml(timeStr)} | <strong>Door:</strong> ${escapeHtml(log.userName || 'Onbekend')}</div>`;
+            
+            if (log.kuismachineGebruikt && !log.kuismachineUitgekuist) {
+                logsHTML += '<div style="margin-bottom: 8px;">';
+                logsHTML += '<span style="margin-right: 12px;">🧹 Kuismachine gebruikt maar niet uitgekuist</span>';
+                logsHTML += `<button class="btn-secondary" onclick="markMachineAsUitgekuist('${escapeHtml(log.id)}', 'kuismachine', event)" style="padding: 6px 12px; font-size: 0.85rem;">Markeer als uitgekuist</button>`;
+                logsHTML += '</div>';
+            }
+            
+            if (log.stofzuigerGebruikt && !log.stofzuigerUitgekuist) {
+                logsHTML += '<div>';
+                logsHTML += '<span style="margin-right: 12px;">💨 Stofzuiger gebruikt maar niet uitgekuist</span>';
+                logsHTML += `<button class="btn-secondary" onclick="markMachineAsUitgekuist('${escapeHtml(log.id)}', 'stofzuiger', event)" style="padding: 6px 12px; font-size: 0.85rem;">Markeer als uitgekuist</button>`;
+                logsHTML += '</div>';
+            }
+            
+            logsHTML += '</div>';
+        });
+        
+        logsList.innerHTML = logsHTML;
+    } catch (error) {
+        console.error('Error loading today logs:', error);
+        editSection.style.display = 'none';
+    }
+}
+
+/**
+ * Markeer machine als uitgekuist (achteraf update)
+ */
+async function markMachineAsUitgekuist(logId, machineType, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    if (!currentUserName) {
+        alert('Je moet ingelogd zijn om logs te kunnen bewerken.');
+        return;
+    }
+    
+    const machineName = machineType === 'kuismachine' ? 'kuismachine' : 'stofzuiger';
+    const confirmed = confirm(`Weet je zeker dat je de ${machineName} als uitgekuist wilt markeren? Dit wordt geregistreerd als achteraf aangepast.`);
+    
+    if (!confirmed) {
+        return;
+    }
+    
+    const button = event?.target;
+    if (button) {
+        button.disabled = true;
+        button.textContent = 'Bezig...';
+    }
+    
+    try {
+        await updateKuismachineLogUitgekuist(logId, machineType, true);
+        
+        // Herlaad de logs lijst
+        await loadTodayLogsForEditing();
+        
+        // Update tool card om nieuwe status te tonen
+        const toolCard = document.querySelector('.tool-card[data-tool-id="kuismachine-logs"]');
+        if (toolCard) {
+            const kuismachineTool = tools.find(t => t.id === 'kuismachine-logs');
+            if (kuismachineTool) {
+                const newCard = await createToolCard(kuismachineTool);
+                toolCard.replaceWith(newCard);
+            }
+        }
+        
+        alert(`${machineName.charAt(0).toUpperCase() + machineName.slice(1)} succesvol gemarkeerd als uitgekuist. Dit is geregistreerd als achteraf aangepast.`);
+    } catch (error) {
+        console.error('Error marking machine as uitgekuist:', error);
+        alert('Fout bij het updaten van de log. Probeer het opnieuw.');
+        
+        if (button) {
+            button.disabled = false;
+            button.textContent = 'Markeer als uitgekuist';
+        }
+    }
+}
+
+/**
+ * Update uitgekuist status van een kuismachine log
+ */
+async function updateKuismachineLogUitgekuist(logId, machineType, uitgekuist) {
+    if (!currentUserName || !database || !firebaseFunctions) {
+        throw new Error('Geen gebruikersnaam of Firebase niet beschikbaar');
+    }
+    
+    try {
+        const { ref, get, set } = firebaseFunctions;
+        const logRef = ref(database, `logs/kuismachine-logs/${logId}`);
+        
+        // Haal huidige log op
+        const snapshot = await get(logRef);
+        if (!snapshot.exists()) {
+            throw new Error('Log niet gevonden');
+        }
+        
+        const currentLog = snapshot.val();
+        const now = new Date();
+        
+        // Update de log met nieuwe status en metadata
+        const updatedLog = {
+            ...currentLog,
+            [`${machineType}Uitgekuist`]: uitgekuist,
+            updatedLater: true,
+            updatedTimestamp: now.getTime(),
+            updatedDateTime: now.toISOString(),
+            updatedBy: currentUserName
+        };
+        
+        // Als uitgekuist, verwijder reden veld
+        if (uitgekuist) {
+            updatedLog[`${machineType}Reden`] = '';
+        }
+        
+        // Sla update op
+        await set(logRef, updatedLog);
+        
+        console.log(`Kuismachine log ${logId} geüpdatet: ${machineType} uitgekuist = ${uitgekuist}`);
+        
+        return updatedLog;
+    } catch (error) {
+        console.error('Error updating kuismachine log:', error);
         throw error;
     }
 }
@@ -3031,15 +3350,8 @@ async function toggleCompletedTask(taskId, event) {
     // Sla status op in Firebase
     await saveDayPlanningStatus(taskId, completed);
     
-    // Update UI
-    const taskElement = document.querySelector(`.planning-task[data-task-id="${taskId}"]`);
-    if (taskElement) {
-        if (completed) {
-            taskElement.classList.add('completed');
-        } else {
-            taskElement.classList.remove('completed');
-        }
-    }
+    // Update UI - render hele planning opnieuw om "Volgende taak:" te updaten
+    await renderDayPlanning();
     
     // Check of alle taken voltooid zijn en toon easter egg (alleen als taak wordt afgevinkt)
     if (completed) {
