@@ -2261,7 +2261,7 @@ async function loadTodayLogsForEditing() {
         
         editSection.style.display = 'block';
         
-        let logsHTML = '<p style="margin-bottom: 16px; color: #666; font-size: 0.9rem;">Logs van vandaag die nog niet uitgekuist zijn:</p>';
+        let logsHTML = '';
         
         todayLogs.forEach(log => {
             const logDate = new Date(log.timestamp);

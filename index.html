@@ -39,6 +39,26 @@
                 <button class="overlay-close" onclick="closeKuismachineOverlay()">&times;</button>
             </div>
             <form id="kuismachine-form" onsubmit="handleKuismachineSubmit(event)" novalidate>
+                <!-- Sectie voor het bewerken van bestaande logs van vandaag - bovenaan -->
+                <div id="edit-today-logs-section" class="edit-today-logs-section" style="display: none;">
+                    <div class="machine-section" style="background: #fff3cd; border: 2px solid #ffc107; margin-bottom: 24px;">
+                        <div class="machine-section-header">
+                            <h3 style="color: #856404;">✏️ Bewerk bestaande logs van vandaag</h3>
+                        </div>
+                        <div style="padding: 0 20px 20px 20px;">
+                            <p style="margin-bottom: 16px; color: #856404; font-size: 0.9rem;">
+                                Logs van vandaag die nog niet uitgekuist zijn kunnen hier achteraf worden aangepast:
+                            </p>
+                            <div id="today-logs-list" class="today-logs-list">
+                                <!-- Logs worden hier dynamisch geladen -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="machine-section-divider">
+                        <span>OF</span>
+                    </div>
+                </div>
+
                 <div class="machine-sections-container">
                     <div class="machine-section">
                         <div class="machine-section-header">
@@ -151,21 +171,6 @@
                                 <label for="stofzuiger-niet-gebruikt-reden">Waarom niet gebruikt? <span class="required">*</span></label>
                                 <textarea id="stofzuiger-niet-gebruikt-reden" name="stofzuigerNietGebruiktReden" rows="2" placeholder="Geef een reden waarom de stofzuiger niet gebruikt is..."></textarea>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sectie voor het bewerken van bestaande logs van vandaag -->
-                <div id="edit-today-logs-section" class="edit-today-logs-section" style="display: none;">
-                    <div class="machine-section-divider">
-                        <span>OF</span>
-                    </div>
-                    <div class="machine-section">
-                        <div class="machine-section-header">
-                            <h3>✏️ Bewerk logs van vandaag</h3>
-                        </div>
-                        <div id="today-logs-list" class="today-logs-list">
-                            <!-- Logs worden hier dynamisch geladen -->
                         </div>
                     </div>
                 </div>
