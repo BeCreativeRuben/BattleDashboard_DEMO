@@ -201,7 +201,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getDatabase, ref, get, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         
         // Firebase configuratie
         const firebaseConfig = {
@@ -221,7 +221,7 @@
         
         // Maak database en functies beschikbaar voor logs.js
         window.firebaseDatabase = database;
-        window.firebaseDatabaseFunctions = { ref, get };
+        window.firebaseDatabaseFunctions = { ref, get, onValue };
     </script>
     <script src="js/logs.js"></script>
 </body>
