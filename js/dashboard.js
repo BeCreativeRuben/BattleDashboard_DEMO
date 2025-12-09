@@ -745,10 +745,17 @@ async function createToolCard(tool) {
     // Voor Kart Weekly: twee knoppen
     let actionsHTML = '';
     if (tool.id === 'kuismachine-logs') {
-        // Speciale button voor kuismachine overlay
+        // Check of er logs van vandaag zijn die nog niet uitgekuist zijn
+        const todayLogs = await getTodayKuismachineLogs();
+        const hasLogsToEdit = todayLogs.length > 0;
+        
+        // Speciale buttons voor kuismachine overlay
         actionsHTML = `
             <button class="tool-link-button" onclick="openKuismachineOverlay(event)">
                 → Ga naar tool
+            </button>
+            <button class="tool-link-button tool-link-button-secondary" onclick="openKuismachineOverlayForEditing(event)" ${hasLogsToEdit ? 'style="background: #ffc107; border-color: #ffc107; color: #856404; font-weight: 600;"' : ''}>
+                ✏️ Bewerk logs van vandaag${hasLogsToEdit ? ` (${todayLogs.length})` : ''}
             </button>
         `;
     } else if (tool.id === 'kart-daily-logboek') {
@@ -1740,6 +1747,27 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+/**
+ * Open kuismachine overlay voor bewerken (scrollt naar bewerk sectie)
+ */
+async function openKuismachineOverlayForEditing(event) {
+    await openKuismachineOverlay(event);
+    
+    // Scroll naar bewerk sectie na korte delay (om te zorgen dat overlay geladen is)
+    setTimeout(() => {
+        const editSection = document.getElementById('edit-today-logs-section');
+        if (editSection && editSection.style.display !== 'none') {
+            editSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Highlight de sectie kort
+            editSection.style.transition = 'box-shadow 0.3s ease';
+            editSection.style.boxShadow = '0 0 20px rgba(255, 193, 7, 0.5)';
+            setTimeout(() => {
+                editSection.style.boxShadow = '';
+            }, 2000);
+        }
+    }, 300);
 }
 
 /**
