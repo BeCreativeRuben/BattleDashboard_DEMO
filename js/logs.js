@@ -463,10 +463,22 @@ function applyFilters() {
         return true;
     });
     
-    // Render alleen de actieve tabel (performance optimalisatie)
+    // Render alle tabellen (voor eerste load altijd allemaal renderen)
+    // Performance optimalisatie: alleen actieve tab renderen bij filter wijzigingen
     const activeTab = document.querySelector('.tab-content.active');
-    if (activeTab) {
+    const isInitialLoad = !activeTab || activeTab.querySelector('.loading');
+    
+    if (isInitialLoad) {
+        // Bij eerste load: render alle tabellen
+        console.log('Initial load: rendering all tables');
+        renderClickLogsTable();
+        renderKuismachineLogsTable();
+        renderKartDailyChecksTable();
+        renderFeedbackTable();
+    } else {
+        // Bij filter wijzigingen: render alleen actieve tab
         const tabId = activeTab.id;
+        console.log('Filter change: rendering active tab:', tabId);
         if (tabId === 'tab-clicks') {
             renderClickLogsTable();
         } else if (tabId === 'tab-kuismachine') {
@@ -476,12 +488,6 @@ function applyFilters() {
         } else if (tabId === 'tab-feedback') {
             renderFeedbackTable();
         }
-    } else {
-        // Fallback: render allemaal bij eerste load of als geen tab actief is
-        renderClickLogsTable();
-        renderKuismachineLogsTable();
-        renderKartDailyChecksTable();
-        renderFeedbackTable();
     }
     
     // Update statistieken
