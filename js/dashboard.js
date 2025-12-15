@@ -615,6 +615,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         setupFirebaseListeners();
         // Start inactivity timer
         startInactivityTimer();
+        
+        // DEMO MODE: Start periodieke updates van "Laatst geklikt" tijden
+        if (typeof DEMO_MODE !== 'undefined' && DEMO_MODE) {
+            startDemoAutoUpdates();
+        }
     }
     
     // Setup activity listeners
@@ -1662,6 +1667,87 @@ async function getLastClick(toolId) {
 }
 
 /**
+ * DEMO MODE: Start periodieke automatische updates van "Laatst geklikt" tijden
+ */
+let demoAutoUpdateInterval = null;
+
+function startDemoAutoUpdates() {
+    // Stop eventuele bestaande interval
+    if (demoAutoUpdateInterval) {
+        clearInterval(demoAutoUpdateInterval);
+    }
+    
+    // Update interval: tussen 30 en 90 seconden (random)
+    const getRandomInterval = () => {
+        return Math.floor(Math.random() * 60000) + 30000; // 30-90 seconden
+    };
+    
+    // Eerste update na 10 seconden
+    setTimeout(() => {
+        updateRandomToolClick();
+        
+        // Dan periodiek updaten
+        demoAutoUpdateInterval = setInterval(() => {
+            updateRandomToolClick();
+        }, getRandomInterval());
+    }, 10000);
+}
+
+/**
+ * DEMO MODE: Update een willekeurige tool met een nieuwe "Laatst geklikt" tijd
+ */
+function updateRandomToolClick() {
+    if (typeof DEMO_MODE === 'undefined' || !DEMO_MODE) {
+        return;
+    }
+    
+    // Demo gebruikersnamen
+    const demoUsers = ['Demo Gebruiker 1', 'Demo Gebruiker 2', 'Demo Gebruiker 3'];
+    
+    // Kies een willekeurige tool (behalve kuismachine-logs en kart-daily-logboek die eigen displays hebben)
+    const toolCards = document.querySelectorAll('.tool-card[data-tool-id]');
+    const eligibleTools = Array.from(toolCards).filter(card => {
+        const toolId = card.getAttribute('data-tool-id');
+        return toolId !== 'kuismachine-logs' && toolId !== 'kart-daily-logboek';
+    });
+    
+    if (eligibleTools.length === 0) {
+        return;
+    }
+    
+    // Kies een willekeurige tool
+    const randomCard = eligibleTools[Math.floor(Math.random() * eligibleTools.length)];
+    const toolId = randomCard.getAttribute('data-tool-id');
+    
+    // Genereer een willekeurige tijd tussen nu en 2 uur geleden
+    const now = new Date();
+    const twoHoursAgo = new Date(now.getTime() - (2 * 60 * 60 * 1000));
+    const randomTime = new Date(twoHoursAgo.getTime() + Math.random() * (now.getTime() - twoHoursAgo.getTime()));
+    
+    // Kies een willekeurige gebruiker
+    const randomUser = demoUsers[Math.floor(Math.random() * demoUsers.length)];
+    
+    // Update de display
+    updateLastClickDisplay(toolId, randomTime, randomUser);
+    
+    // Update ook in mock Firebase (voor consistentie)
+    if (window.mockFirebaseDatabase && database && firebaseFunctions) {
+        const { ref, push } = firebaseFunctions;
+        const logRef = ref(database, `logs/${toolId}`);
+        const logData = {
+            userName: randomUser,
+            timestamp: randomTime.getTime(),
+            dateTime: formatDateTime(randomTime)
+        };
+        push(logRef, logData).catch(err => {
+            console.log('Demo: Kon log niet opslaan in mock Firebase:', err);
+        });
+    }
+    
+    console.log(`🔵 DEMO: Tool "${toolId}" geüpdatet met tijd ${formatDateTime(randomTime)} door ${randomUser}`);
+}
+
+/**
  * Update de weergave van laatste klik tijd en gebruikersnaam
  */
 function updateLastClickDisplay(toolId, dateTime, userName = null) {
@@ -1669,10 +1755,35 @@ function updateLastClickDisplay(toolId, dateTime, userName = null) {
     const baseToolId = toolId.replace('-logboek', '');
     const card = document.querySelector(`.tool-card[data-tool-id="${baseToolId}"]`);
     if (card) {
-        const infoValue = card.querySelector('.info-value');
-        if (infoValue) {
-            infoValue.textContent = formatDateTime(dateTime);
-            infoValue.classList.remove('empty');
+        // Zoek naar de "Laatst geklikt" info-item specifiek
+        const toolInfo = card.querySelector('.tool-info');
+        if (toolInfo) {
+            const infoItems = toolInfo.querySelectorAll('.info-item');
+            let lastClickItem = null;
+            for (const item of infoItems) {
+                const label = item.querySelector('.info-label');
+                if (label && label.textContent.includes('Laatst geklikt')) {
+                    lastClickItem = item;
+                    break;
+                }
+            }
+            
+            if (lastClickItem) {
+                const infoValue = lastClickItem.querySelector('.info-value');
+                if (infoValue) {
+                    infoValue.textContent = formatDateTime(dateTime);
+                    infoValue.classList.remove('empty');
+                }
+            }
+        }
+        
+        // Fallback: zoek gewoon naar eerste info-value als bovenstaande niet werkt
+        if (!toolInfo) {
+            const infoValue = card.querySelector('.info-value');
+            if (infoValue) {
+                infoValue.textContent = formatDateTime(dateTime);
+                infoValue.classList.remove('empty');
+            }
         }
         
         // Update of voeg gebruikersnaam toe

@@ -257,8 +257,8 @@
         <header>
             <div class="header-content">
                 <div class="header-left">
-                    <h1>Battlekart Dashboard</h1>
-                    <p class="subtitle">Overzicht van alle tools en toepassingen</p>
+                    <h1 class="demo-header-title">Battlekart Dashboard</h1>
+                    <p class="subtitle">Overzicht van alle tools en toepassingen <span style="color: #ffeb3b; font-weight: 700;">(DEMO)</span></p>
                 </div>
                 <div class="header-right">
                     <div class="header-links">
@@ -449,6 +449,10 @@
     
     <!-- Firebase SDK - DEMO MODE: Gebruik mock Firebase -->
     <script type="module">
+        // Import Firebase modules (altijd nodig voor fallback)
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, set, get, onValue, push, query, orderByChild, limitToLast, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        
         // DEMO MODE: Gebruik mock Firebase in plaats van echte Firebase
         if (typeof DEMO_MODE !== 'undefined' && DEMO_MODE) {
             console.log('🔵 DEMO MODE ACTIEF - Gebruik mock Firebase');
@@ -572,9 +576,6 @@
             };
         } else {
             // ECHTE MODE: Gebruik echte Firebase
-            import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-            import { getDatabase, ref, set, get, onValue, push, query, orderByChild, limitToLast, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-            
             // Firebase configuratie
             const firebaseConfig = {
                 apiKey: "AIzaSyDPLYMn7SkaYUjlyk1LjAY3mv-EaUz96Fw",
@@ -596,6 +597,11 @@
             window.firebaseDatabaseFunctions = { ref, set, get, onValue, push, query, orderByChild, limitToLast, remove };
         }
     </script>
+    <!-- DEMO Watermark -->
+    <div class="demo-watermark" id="demo-watermark">
+        🔵 DEMO MODE - Testdata wordt periodiek geüpdatet
+    </div>
+    
     <script src="js/debug-errors.js"></script>
     <script src="js/dashboard.js"></script>
 </body>
