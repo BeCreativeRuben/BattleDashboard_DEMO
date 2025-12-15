@@ -1,53 +1,114 @@
 // Link data met alle tools en links
-const tools = [
-    // Dagelijkse taken
-    {
-        id: 'cash-payments',
-        title: 'Cash & Payments Employees',
-        url: 'https://docs.google.com/spreadsheets/d/1NRhb54013pCnwgjNvl6OgvL7UAzP_xarv601Va_DFNY/edit?gid=269408941#gid=269408941',
-        frequency: 'daily'
-    },
-    {
-        id: 'kart-daily-logboek',
-        title: 'Kart Daily logboek',
-        url: 'https://battlekartbelgium-my.sharepoint.com/:x:/g/personal/kayode_gent_battlekart_com/IQCMZLSPmdZfTIf2hhkD0WneAVO_aWJp5IvU1HPyfNuCJrs?e=q2OFJM',
-        frequency: 'daily'
-    },
-    {
-        id: 'daily-report',
-        title: 'Daily Report',
-        url: 'https://battlekartbelgium-my.sharepoint.com/:w:/g/personal/info_gent_battlekart_com/IQAFUG29K3cPRqUOHIo-eiC3AcGFK6Q8GalIm9Mwv8I52rM?e=RK7Ypo',
-        frequency: 'daily'
-    },
-    {
-        id: 'bk-panel',
-        title: 'BK panel',
-        url: 'https://oauth.battlekart.com/authorize?client_id=d66a502f0a4b7690ed5808e0b559010b&redirect_uri=https%3A%2F%2Fpanel.battlekart.com%2F&response_type=id_token&scope=openid+profile+email&state=33be5a04e47045b69f25360d57512097&brand_id=2&flow=',
-        frequency: 'daily'
-    },
-    {
-        id: 'kuismachine-logs',
-        title: 'Kuismachine logs',
-        url: '#',
-        isFile: true,
-        frequency: 'daily'
-    },
-    // Wekelijkse taken
-    {
-        id: 'stockcheck-bk',
-        title: 'StockcheckBK',
-        url: 'https://becreativeruben.github.io/StockCheckBK_V2/',
-        frequency: 'weekly'
-    },
-    {
-        id: 'kart-weekly',
-        title: 'Kart Weekly',
-        url: 'https://becreativeruben.github.io/WeeklyKartCheck/',
-        logboekUrl: 'https://docs.google.com/spreadsheets/d/1sCTKJzF1b7pZ5bB1AFD8Y-Hzx2HXI4x5AhVMNVi6gM8/edit',
-        frequency: 'weekly',
-        hasMultipleLinks: true
+// DEMO MODE: Gebruik demo URLs in plaats van echte links
+const getTools = () => {
+    const isDemoMode = typeof DEMO_MODE !== 'undefined' && DEMO_MODE;
+    
+    if (isDemoMode) {
+        // DEMO MODE: Gebruik demo/placeholder URLs
+        return [
+            // Dagelijkse taken
+            {
+                id: 'cash-payments',
+                title: 'Cash & Payments Employees',
+                url: '#demo-cash-payments',
+                frequency: 'daily'
+            },
+            {
+                id: 'kart-daily-logboek',
+                title: 'Kart Daily logboek',
+                url: '#demo-kart-daily',
+                frequency: 'daily'
+            },
+            {
+                id: 'daily-report',
+                title: 'Daily Report',
+                url: '#demo-daily-report',
+                frequency: 'daily'
+            },
+            {
+                id: 'bk-panel',
+                title: 'BK panel',
+                url: '#demo-bk-panel',
+                frequency: 'daily'
+            },
+            {
+                id: 'kuismachine-logs',
+                title: 'Kuismachine logs',
+                url: '#',
+                isFile: true,
+                frequency: 'daily'
+            },
+            // Wekelijkse taken
+            {
+                id: 'stockcheck-bk',
+                title: 'StockcheckBK',
+                url: '#demo-stockcheck',
+                frequency: 'weekly'
+            },
+            {
+                id: 'kart-weekly',
+                title: 'Kart Weekly',
+                url: '#demo-kart-weekly',
+                logboekUrl: '#demo-kart-weekly-logboek',
+                frequency: 'weekly',
+                hasMultipleLinks: true
+            }
+        ];
+    } else {
+        // ECHTE MODE: Gebruik echte URLs
+        return [
+            // Dagelijkse taken
+            {
+                id: 'cash-payments',
+                title: 'Cash & Payments Employees',
+                url: 'https://docs.google.com/spreadsheets/d/1NRhb54013pCnwgjNvl6OgvL7UAzP_xarv601Va_DFNY/edit?gid=269408941#gid=269408941',
+                frequency: 'daily'
+            },
+            {
+                id: 'kart-daily-logboek',
+                title: 'Kart Daily logboek',
+                url: 'https://battlekartbelgium-my.sharepoint.com/:x:/g/personal/kayode_gent_battlekart_com/IQCMZLSPmdZfTIf2hhkD0WneAVO_aWJp5IvU1HPyfNuCJrs?e=q2OFJM',
+                frequency: 'daily'
+            },
+            {
+                id: 'daily-report',
+                title: 'Daily Report',
+                url: 'https://battlekartbelgium-my.sharepoint.com/:w:/g/personal/info_gent_battlekart_com/IQAFUG29K3cPRqUOHIo-eiC3AcGFK6Q8GalIm9Mwv8I52rM?e=RK7Ypo',
+                frequency: 'daily'
+            },
+            {
+                id: 'bk-panel',
+                title: 'BK panel',
+                url: 'https://oauth.battlekart.com/authorize?client_id=d66a502f0a4b7690ed5808e0b559010b&redirect_uri=https%3A%2F%2Fpanel.battlekart.com%2F&response_type=id_token&scope=openid+profile+email&state=33be5a04e47045b69f25360d57512097&brand_id=2&flow=',
+                frequency: 'daily'
+            },
+            {
+                id: 'kuismachine-logs',
+                title: 'Kuismachine logs',
+                url: '#',
+                isFile: true,
+                frequency: 'daily'
+            },
+            // Wekelijkse taken
+            {
+                id: 'stockcheck-bk',
+                title: 'StockcheckBK',
+                url: 'https://becreativeruben.github.io/StockCheckBK_V2/',
+                frequency: 'weekly'
+            },
+            {
+                id: 'kart-weekly',
+                title: 'Kart Weekly',
+                url: 'https://becreativeruben.github.io/WeeklyKartCheck/',
+                logboekUrl: 'https://docs.google.com/spreadsheets/d/1sCTKJzF1b7pZ5bB1AFD8Y-Hzx2HXI4x5AhVMNVi6gM8/edit',
+                frequency: 'weekly',
+                hasMultipleLinks: true
+            }
+        ];
     }
-];
+};
+
+const tools = getTools();
 
 // Tutorial data voor elk document
 const tutorials = {
@@ -1467,6 +1528,21 @@ function handleLinkClick(toolId, event) {
     if (!currentUserName) {
         showNameModal();
         return;
+    }
+    
+    // DEMO MODE: Behandel demo links
+    const isDemoMode = typeof DEMO_MODE !== 'undefined' && DEMO_MODE;
+    if (isDemoMode) {
+        const tool = tools.find(t => t.id === toolId || t.id === toolId.replace('-logboek', ''));
+        if (tool && (tool.url && tool.url.startsWith('#demo-') || (tool.logboekUrl && tool.logboekUrl.startsWith('#demo-')))) {
+            event.preventDefault();
+            alert('🔵 DEMO MODE\n\nDit is een demo link. In de echte versie zou dit naar het externe systeem gaan.\n\nTool: ' + tool.title);
+            // Log de klik tijd (voor demo)
+            const now = new Date();
+            const baseToolId = toolId.replace('-logboek', '');
+            saveClickLog(baseToolId, now);
+            return;
+        }
     }
     
     // Speciale behandeling voor Daily Report - toon waarschuwing
