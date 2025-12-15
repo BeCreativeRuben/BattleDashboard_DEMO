@@ -444,87 +444,51 @@
         </div>
     </div>
 
-    <!-- Demo Config -->
+    <!-- Demo Config - Load synchronously -->
     <script src="js/demo-config.js"></script>
     
     <!-- Firebase SDK - DEMO MODE: Gebruik mock Firebase -->
     <script type="module">
-        // Import Firebase modules (altijd nodig voor fallback)
+        // Import Firebase modules
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getDatabase, ref, set, get, onValue, push, query, orderByChild, limitToLast, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         
-        // DEMO MODE: Gebruik mock Firebase in plaats van echte Firebase
-        if (typeof DEMO_MODE !== 'undefined' && DEMO_MODE) {
-            console.log('🔵 DEMO MODE ACTIEF - Gebruik mock Firebase');
-            
-            // Mock Firebase functies
-            const mockRef = (database, path) => {
-                return { path: path, database: database };
-            };
-            
-            const mockGet = async (ref) => {
-                const data = window.mockFirebaseDatabase.getDataAtPath(ref.path);
-                return {
-                    exists: () => {
-                        if (data === null || data === undefined) return false;
-                        if (typeof data === 'object' && Object.keys(data).length === 0) return false;
-                        return true;
-                    },
-                    val: () => data
-                };
-            };
-            
-            const mockSet = async (ref, value) => {
-                window.mockFirebaseDatabase.setDataAtPath(ref.path, value);
-                window.mockFirebaseDatabase.triggerListeners(ref.path);
-            };
-            
-            const mockPush = async (ref, value) => {
-                const newId = 'demo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                const newPath = ref.path + '/' + newId;
-                window.mockFirebaseDatabase.setDataAtPath(newPath, value);
-                window.mockFirebaseDatabase.triggerListeners(ref.path);
-                return { key: newId };
-            };
-            
-            const mockOnValue = (ref, callback) => {
-                window.mockFirebaseDatabase.onValue(ref, callback);
-            };
-            
-            const mockRemove = async (ref) => {
-                window.mockFirebaseDatabase.setDataAtPath(ref.path, null);
-                window.mockFirebaseDatabase.triggerListeners(ref.path);
-            };
-            
-            // Mock query functies voor logs pagina
-            const mockQuery = (ref) => ref;
-            const mockOrderByChild = (field) => {
-                return (ref) => {
-                    return {
-                        ...ref,
-                        orderBy: field,
-                        orderType: 'child'
-                    };
-                };
-            };
-            const mockLimitToLast = (limit) => {
-                return (ref) => {
-                    return {
-                        ...ref,
-                        limit: limit,
-                        limitType: 'last'
-                    };
-                };
-            };
-            
-            // Verbeterde mockGet die query parameters ondersteunt
-            const mockGetWithQuery = async (ref) => {
-                let data = window.mockFirebaseDatabase.getDataAtPath(ref.path);
+        // Wacht kort tot demo-config.js geladen is (max 2 seconden)
+        function waitForDemoConfig() {
+            return new Promise((resolve) => {
+                if (typeof DEMO_MODE !== 'undefined' && typeof window.mockFirebaseDatabase !== 'undefined') {
+                    resolve();
+                } else {
+                    let attempts = 0;
+                    const checkInterval = setInterval(() => {
+                        if (typeof DEMO_MODE !== 'undefined' && typeof window.mockFirebaseDatabase !== 'undefined') {
+                            clearInterval(checkInterval);
+                            resolve();
+                        } else if (attempts++ > 20) {
+                            clearInterval(checkInterval);
+                            console.warn('DEMO config niet geladen na 2 seconden, gebruik fallback');
+                            resolve();
+                        }
+                    }, 100);
+                }
+            });
+        }
+        
+        // Initialiseer Firebase na demo config
+        waitForDemoConfig().then(() => {
+            // DEMO MODE: Gebruik mock Firebase
+            if (typeof DEMO_MODE !== 'undefined' && DEMO_MODE && typeof window.mockFirebaseDatabase !== 'undefined') {
+                console.log('🔵 DEMO MODE ACTIEF - Gebruik mock Firebase');
                 
-                // Als ref query parameters heeft, pas data aan
-                if (ref.orderBy) {
-                    // Sorteer op child field
-                    if (data && typeof data === 'object') {
+                // Mock Firebase functies
+                const mockRef = (database, path) => {
+                    return { path: path, database: window.mockFirebaseDatabase };
+                };
+                
+                const mockGetWithQuery = async (ref) => {
+                    let data = window.mockFirebaseDatabase.getDataAtPath(ref.path);
+                    
+                    if (ref.orderBy && data && typeof data === 'object') {
                         const entries = Object.entries(data);
                         entries.sort((a, b) => {
                             const aVal = a[1] && a[1][ref.orderBy];
@@ -537,65 +501,86 @@
                             return String(aVal).localeCompare(String(bVal));
                         });
                         
-                        // Pas limit toe
                         if (ref.limit && ref.limitType === 'last') {
                             entries.splice(0, entries.length - ref.limit);
                         }
                         
                         data = Object.fromEntries(entries);
+                    } else if (ref.limit && ref.limitType === 'last' && data && typeof data === 'object') {
+                        const entries = Object.entries(data);
+                        entries.splice(0, entries.length - ref.limit);
+                        data = Object.fromEntries(entries);
                     }
-                } else if (ref.limit && ref.limitType === 'last' && data && typeof data === 'object') {
-                    // Alleen limit zonder orderBy
-                    const entries = Object.entries(data);
-                    entries.splice(0, entries.length - ref.limit);
-                    data = Object.fromEntries(entries);
-                }
-                
-                return {
-                    exists: () => {
-                        if (data === null || data === undefined) return false;
-                        if (typeof data === 'object' && Object.keys(data).length === 0) return false;
-                        return true;
-                    },
-                    val: () => data
+                    
+                    return {
+                        exists: () => {
+                            if (data === null || data === undefined) return false;
+                            if (typeof data === 'object' && Object.keys(data).length === 0) return false;
+                            return true;
+                        },
+                        val: () => data
+                    };
                 };
-            };
-            
-            // Maak mock database en functies beschikbaar
-            window.firebaseDatabase = window.mockFirebaseDatabase;
-            window.firebaseDatabaseFunctions = { 
-                ref: mockRef, 
-                set: mockSet, 
-                get: mockGetWithQuery, 
-                onValue: mockOnValue, 
-                push: mockPush, 
-                query: mockQuery,
-                orderByChild: mockOrderByChild,
-                limitToLast: mockLimitToLast,
-                remove: mockRemove 
-            };
-        } else {
-            // ECHTE MODE: Gebruik echte Firebase
-            // Firebase configuratie
-            const firebaseConfig = {
-                apiKey: "AIzaSyDPLYMn7SkaYUjlyk1LjAY3mv-EaUz96Fw",
-                authDomain: "battlekartoverview.firebaseapp.com",
-                databaseURL: "https://battlekartoverview-default-rtdb.europe-west1.firebasedatabase.app",
-                projectId: "battlekartoverview",
-                storageBucket: "battlekartoverview.firebasestorage.app",
-                messagingSenderId: "627461116548",
-                appId: "1:627461116548:web:8fb3b10824f3236105a8d1",
-                measurementId: "G-RVLESW1G3L"
-            };
-
-            // Initialize Firebase
-            const app = initializeApp(firebaseConfig);
-            const database = getDatabase(app);
-            
-            // Maak database en functies beschikbaar voor dashboard.js
-            window.firebaseDatabase = database;
-            window.firebaseDatabaseFunctions = { ref, set, get, onValue, push, query, orderByChild, limitToLast, remove };
-        }
+                
+                const mockSet = async (ref, value) => {
+                    window.mockFirebaseDatabase.setDataAtPath(ref.path, value);
+                    window.mockFirebaseDatabase.triggerListeners(ref.path);
+                };
+                
+                const mockPush = async (ref, value) => {
+                    const newId = 'demo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    const newPath = ref.path + '/' + newId;
+                    window.mockFirebaseDatabase.setDataAtPath(newPath, value);
+                    window.mockFirebaseDatabase.triggerListeners(ref.path);
+                    return { key: newId };
+                };
+                
+                const mockOnValue = (ref, callback) => {
+                    window.mockFirebaseDatabase.onValue(ref, callback);
+                };
+                
+                const mockRemove = async (ref) => {
+                    window.mockFirebaseDatabase.setDataAtPath(ref.path, null);
+                    window.mockFirebaseDatabase.triggerListeners(ref.path);
+                };
+                
+                const mockQuery = (ref) => ref;
+                const mockOrderByChild = (field) => (ref) => ({ ...ref, orderBy: field, orderType: 'child' });
+                const mockLimitToLast = (limit) => (ref) => ({ ...ref, limit: limit, limitType: 'last' });
+                
+                // Maak mock database beschikbaar
+                window.firebaseDatabase = window.mockFirebaseDatabase;
+                window.firebaseDatabaseFunctions = { 
+                    ref: mockRef, 
+                    set: mockSet, 
+                    get: mockGetWithQuery, 
+                    onValue: mockOnValue, 
+                    push: mockPush, 
+                    query: mockQuery,
+                    orderByChild: mockOrderByChild,
+                    limitToLast: mockLimitToLast,
+                    remove: mockRemove 
+                };
+            } else {
+                // ECHTE MODE: Gebruik echte Firebase
+                const firebaseConfig = {
+                    apiKey: "AIzaSyDPLYMn7SkaYUjlyk1LjAY3mv-EaUz96Fw",
+                    authDomain: "battlekartoverview.firebaseapp.com",
+                    databaseURL: "https://battlekartoverview-default-rtdb.europe-west1.firebasedatabase.app",
+                    projectId: "battlekartoverview",
+                    storageBucket: "battlekartoverview.firebasestorage.app",
+                    messagingSenderId: "627461116548",
+                    appId: "1:627461116548:web:8fb3b10824f3236105a8d1",
+                    measurementId: "G-RVLESW1G3L"
+                };
+                
+                const app = initializeApp(firebaseConfig);
+                const database = getDatabase(app);
+                
+                window.firebaseDatabase = database;
+                window.firebaseDatabaseFunctions = { ref, set, get, onValue, push, query, orderByChild, limitToLast, remove };
+            }
+        });
     </script>
     <!-- DEMO Watermark -->
     <div class="demo-watermark" id="demo-watermark">
