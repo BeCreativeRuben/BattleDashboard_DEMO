@@ -394,14 +394,23 @@ class MockFirebaseDatabase {
         const parts = path.split('/').filter(p => p);
         let current = this.data;
         
+        // Navigeer naar de juiste locatie, maak objecten aan waar nodig
         for (let i = 0; i < parts.length - 1; i++) {
-            if (!current[parts[i]]) {
-                current[parts[i]] = {};
+            const part = parts[i];
+            if (!current[part] || typeof current[part] !== 'object') {
+                current[part] = {};
             }
-            current = current[parts[i]];
+            current = current[part];
         }
         
-        current[parts[parts.length - 1]] = value;
+        // Zet de waarde
+        const lastPart = parts[parts.length - 1];
+        if (value === null) {
+            // Verwijder de waarde
+            delete current[lastPart];
+        } else {
+            current[lastPart] = value;
+        }
     }
     
     triggerListeners(path) {

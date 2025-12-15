@@ -3386,7 +3386,18 @@ async function saveKartDailyCheck(checkData) {
         const now = new Date();
         const dateString = now.toISOString().split('T')[0];
         const logsRef = ref(database, `logs/kart-daily-checks/${dateString}`);
-        await push(logsRef, checkData);
+        
+        // DEMO MODE: Log voor debugging
+        if (typeof DEMO_MODE !== 'undefined' && DEMO_MODE) {
+            console.log('🔵 DEMO: Opslaan kart daily check voor datum:', dateString);
+        }
+        
+        const pushResult = await push(logsRef, checkData);
+        
+        // DEMO MODE: Log succes
+        if (typeof DEMO_MODE !== 'undefined' && DEMO_MODE) {
+            console.log('🔵 DEMO: Kart daily check succesvol opgeslagen met ID:', pushResult.key);
+        }
         
         // Update laatste klik voor tracking
         const lastClickRef = ref(database, 'clicks/kart-daily-logboek');
@@ -3396,7 +3407,11 @@ async function saveKartDailyCheck(checkData) {
             userName: checkData.userName
         });
         
-        console.log('Kart daily check opgeslagen in Firebase');
+        if (typeof DEMO_MODE !== 'undefined' && DEMO_MODE) {
+            console.log('🔵 DEMO: Laatste klik bijgewerkt voor kart-daily-logboek');
+        } else {
+            console.log('Kart daily check opgeslagen in Firebase');
+        }
     } catch (error) {
         console.error('Error saving to Firebase:', error);
         throw error;
@@ -3417,19 +3432,34 @@ async function getLastKartDailyCheck() {
         const dateString = now.toISOString().split('T')[0];
         const logsRef = ref(database, `logs/kart-daily-checks/${dateString}`);
         
-        // Haal laatste check op
-        const logsQuery = query(logsRef, orderByChild('timestamp'), limitToLast(1));
-        const snapshot = await get(logsQuery);
+        // DEMO MODE: Gebruik directe get zonder query (mock Firebase query werkt niet perfect)
+        const isDemoMode = typeof DEMO_MODE !== 'undefined' && DEMO_MODE;
+        
+        let snapshot;
+        if (isDemoMode) {
+            // In demo mode, gebruik direct get zonder query
+            snapshot = await get(logsRef);
+        } else {
+            // In echte mode, gebruik query
+            const logsQuery = query(logsRef, orderByChild('timestamp'), limitToLast(1));
+            snapshot = await get(logsQuery);
+        }
         
         if (snapshot.exists()) {
             const logs = snapshot.val();
-            // Vind de log met de hoogste timestamp
+            
+            // Als logs een array is (van limitToLast), pak het eerste element
+            if (Array.isArray(logs) && logs.length > 0) {
+                return logs[0];
+            }
+            
+            // Anders, vind de log met de hoogste timestamp
             let lastLog = null;
             let lastTimestamp = 0;
             
             Object.keys(logs).forEach(logId => {
                 const log = logs[logId];
-                if (log.timestamp && log.timestamp > lastTimestamp) {
+                if (log && log.timestamp && log.timestamp > lastTimestamp) {
                     lastTimestamp = log.timestamp;
                     lastLog = log;
                 }
@@ -3439,6 +3469,10 @@ async function getLastKartDailyCheck() {
         }
     } catch (error) {
         console.error('Error loading kart daily check from Firebase:', error);
+        // In DEMO mode, geef geen error maar return null
+        if (typeof DEMO_MODE !== 'undefined' && DEMO_MODE) {
+            console.log('DEMO: Geen kart daily check gevonden voor vandaag');
+        }
     }
     
     return null;
