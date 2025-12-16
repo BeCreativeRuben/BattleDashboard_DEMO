@@ -1786,8 +1786,7 @@ function updateLastClickDisplay(toolId, dateTime, userName = null) {
             }
         }
         
-        // Update of voeg gebruikersnaam toe
-        const toolInfo = card.querySelector('.tool-info');
+        // Update of voeg gebruikersnaam toe (gebruik dezelfde toolInfo variabele)
         if (toolInfo && userName) {
             // Zoek naar bestaande gebruikersnaam item
             const allInfoItems = toolInfo.querySelectorAll('.info-item');
